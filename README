@@ -3,8 +3,9 @@
 =                            /\    /\   /\                                    =
 ===============================================================================
 
-Title  :: Emulator virtual machine instructions for the CNC MACH-9MP
-Author :: Antonio Mamani Quispe
+ Title  :: Emulator virtual machine instructions for the CNC MACH-9MP
+ Author :: Antonio Mamani Quispe
+ email  :: antonio.mq@gmail.com
 
 ===============================================================================
 
@@ -13,6 +14,6 @@ Author :: Antonio Mamani Quispe
 1. ghc, version >= 6.10 
 2. uulib
 3. qtHaskell
-4. HOpenbl
+4. HOpengl
 5. OpenGL
 
