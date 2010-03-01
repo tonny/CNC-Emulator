@@ -1,0 +1,14 @@
+;holaaaaaaa como esta
+
+G31 N
+G22 I J Z 
+G73  D A Z P
+G27 X W
+G19 N 
+G24 P R
+G25 X  F E
+G29 L
+G26 F H
+G74 E A
+G45 H P
+G83 X D
