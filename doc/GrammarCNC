@@ -1,0 +1,26 @@
+===============================================================================
+=                    \   Free Context Grammar for CNC  \                      =
+=                    /\           by to_On1            /\                     =
+===============================================================================
+
+sign ::= '+' | '-'
+
+digit ::= '0'|'1'|...|'9'
+
+decimal ::= [sign] digit {digit}*
+
+float ::= [sign] decimal '.' decimal
+
+axes ::= 'X' | 'Y' | 'Z'
+
+secundaryAxes ::= 'U' | 'V' | 'W'
+
+comment ::= ';' {any symbol}* newline  
+
+endBlock ::= '#'
+
+coordinateControl ::= inch
+                    | metric
+                    | absolute
+                    | incremental
+                    | temporaryOrigin
