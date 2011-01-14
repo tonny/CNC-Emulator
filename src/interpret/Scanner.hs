@@ -1,9 +1,9 @@
 module Scanner where
-import UU.Parsing
+--import UU.Parsing
 import Char
 {-# LANGUAGE UndecidableInstances #-}
 
-data Token = Token Tipo String Fila Columna
+data Simbolo = Simbolo Tipo String Fila Columna
 
 type Fila = Int
 type Columna = Int
@@ -11,16 +11,18 @@ type Columna = Int
 data Tipo = Keyword 
           | Error
           | EndBlock
-          | Number
+          | Numero
     deriving (Eq, Ord)
 
-instance Show Token where
-   show (Token t s f c) = show t ++ show s ++ " " ++ show f ++ " " ++ show c ++ "\n"
+instance Show Simbolo where
+   show (Simbolo t s f c) = show t ++ show s ++ " " ++ show f ++ " " ++ show c ++ "\n"
 
 instance Show Tipo where
    show Keyword  = "Palabra Reservada: "
    show Error    = "Error            : "
-   show Number   = "Numero           : "
+--   show Entero   = "Entero           : "
+--   show Decimal  = "Decimal          : "
+   show Numero   = "Numero           : "
    show EndBlock = "Fin de Bloque    : "
 
 --scan :: String -> Integer -> Integer -> [Token]
@@ -32,17 +34,21 @@ scan (x:xs) f c | x == '\n' = scan xs (f+1) 1
                 | x == ';'  = scan (eliminar xs) f (c+1)
                 | x == 'G'  = let res = funcionG xs
                                 in case res of
-                                   "error" -> (Token Error "Error2 " f c):scan [] f c
-                                   _       -> (Token Keyword res f c):scan (rm ((length res)-1) ) f (c+3)
-                | elem x ['A'..'Z'] = (Token Keyword  (x:[]) f c ):scan xs f (c+1) 
-                | x == '#' = (Token EndBlock (x:[]) f c): scan xs f (c+1) 
+                                   "error" -> (Simbolo Error "Error2 " f c):scan [] f c
+                                   _       -> (Simbolo Keyword res f c):scan (rm ((length res)-1) ) f (c+3)
+                | elem x ['A'..'Z'] = (Simbolo Keyword  (x:[]) f c ):scan xs f (c+1) 
+                | x == '#' = (Simbolo EndBlock (x:[]) f c): scan xs f (c+1) 
                 | isDigit x || x == '-'  = let num = entero xs
                                                tam = length num
                                            in 
                                            case num of 
-                                           "error" -> (Token Error "Numero Invalido" f c):scan [] f c
-                                           _       -> (Token Number (x:num) f c):scan (rm tam) f (c+(tam+1))
-                | otherwise = return (Token Error "Simbolo no valido" f c)
+                                           "error" -> (Simbolo Error "Numero Invalido" f c):scan [] f c
+                                           _       -> (Simbolo Numero (x:num) f c):scan (rm tam) f (c+(tam+1))
+
+                                              {--   if elem '.' num 
+                                                      then (Token Decimal (x:num) f c):scan (rm tam) f (c+(tam+1))
+                                                      else (Token Entero (x:num) f c):scan (rm tam) f (c+(tam+1))--}
+                | otherwise = return (Simbolo Error "Simbolo no valido" f c)
 
                 where               
                   eliminar f = dropWhile ( /= '\n') f
@@ -60,9 +66,11 @@ scan (x:xs) f c | x == '\n' = scan xs (f+1) 1
                                 | otherwise = entero []
 
 
+{-
 instance (Eq Tipo) => (Eq Token) where
    (Token Error _ _ _ ) == (Token Error _ _ _ ) = True
-   (Token Number _ _ _) == (Token Number _ _ _) = True
+   (Token Entero _ _ _) == (Token Entero _ _ _) = True
+   (Token Decimal _ _ _) == (Token Decimal _ _ _) = True
    (Token t1    s _ _ ) == (Token t2   s1 _ _ ) = t1 == t2 && s == s1
 
 instance Ord Token where
@@ -82,4 +90,6 @@ tSym tok str = obtenerValor <$> pSym (Token tok str 0 0)
 
 
 pKeyword k = tSym Keyword k
-pNumero    = (\ x ->(read x)::Int) <$> tSym Number "" 
+pEntero    = (\ x ->(read x)::Int) <$> tSym Entero ""
+pDecimal   = (\ x ->(read x)::Float) <$> tSym Decimal ""
+-}

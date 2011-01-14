@@ -1,14 +1,11 @@
 ;holaaaaaaa como esta
 
-G31 N
-G22 I J Z 
-G73  D A Z P
-G27 X W
-G19 N 
-G24 P R
-G25 X  F E
-G29 L
-G26 F H
-G74 E A
-G45 H P
-G83 X D
+G70 N2123
+G71           N34 
+G90 X23  ;Probar todos los casos G12
+G91 V2 ;Probar con abcijknruvwxyz
+G91 ;El libro dice que se puede editar a x,y,z pero en la gramatica no
+G92 ;Hay que averiguar mas
+G94 N12 ;Averiguar en que afecta C y F
+G99;falta para A..Z
+G74 
