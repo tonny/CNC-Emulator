@@ -10,6 +10,6 @@ import GramaticaAbstracta
 main :: IO ()
 main = do s <- readFile "test"
           let token = scanner s
-          arbol <- parseIO pRaiz (token)
+          arbol <- parseIO pCodigoCnc (token)
           putStrLn (show token)
           putStrLn (show arbol)

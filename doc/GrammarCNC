@@ -11,16 +11,26 @@ decimal ::= [sign] digit {digit}*
 
 float ::= [sign] decimal '.' decimal
 
-axes ::= 'X' | 'Y' | 'Z'
+number :: decimal
+        | float
 
-secundaryAxes ::= 'U' | 'V' | 'W'
-
-comment ::= ';' {any symbol}* newline  
-
+comment ::= ";" {anySymbol}* newline
+ 
 endBlock ::= '#'
+
+===============================================================================
+
+axes ::= ('X' | 'Y' | 'Z') number
+
+secundaryAxes ::= ('U' | 'V' | 'W') number
+
+centerPosition ::= ('I' | 'J' | 'K') number
+
+===============================================================================
 
 coordinateControl ::= inch
                     | metric
                     | absolute
                     | incremental
                     | temporaryOrigin
+                    
