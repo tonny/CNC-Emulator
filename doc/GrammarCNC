@@ -18,19 +18,182 @@ comment ::= ";" {anySymbol}* newline
  
 endBlock ::= '#'
 
-===============================================================================
 
-axes ::= ('X' | 'Y' | 'Z') number
+============================= assignemment of angles ==========================
 
-secundaryAxes ::= ('U' | 'V' | 'W') number
+angles = ('A' | 'B' | 'C') number
+
+=========================== Function D - Divided Block ========================
+
+divided = 'D' number
+
+=========================== Function F - Feedrate =============================
+
+feedrate = 'F' number
+
+======================= Function M - Miscellaneous ===========================
+
+miscellaneous  = 'M' ( controlTree | controlProgram )
+
+controlTree = 03 | 04 | 05
+
+controlProgram = 00 | 01 | 02 | 30 | 06
+ 
+======================== Function of block position ===========================
 
 centerPosition ::= ('I' | 'J' | 'K') number
 
+axesRotation ::= ('U' | 'V' | 'W') number
+
+axesLin ::= ('X' | 'Y' | 'Z') number
+           
+================== Function N,H,E,L,P - Branching program ====================
+
+sequence = 'N' number
+
+desviation = 'P' number
+
+callSubRoutine = 'H' number
+
+endSequence = 'E' number
+
+repeatBlock = 'L' number
+
+==================== selection of corrector the tool ==========================
+
+selectionCorrectorTool = 'O' number
+
+====================== Function Q - rounding ==================================
+
+roundig = 'Q' number
+
+========================= Specify a length polar ==============================
+
+lenghtPolar = 'R' number
+
+==================== Velocity of rotation the Tree exes =======================
+
+velocityRotation = 'S' number
+
+============================== selection tool =================================
+
+selectionTool = 'T' number
+
 ===============================================================================
 
-coordinateControl ::= inch
+============================ movements function G =============================
+
+coordinatesControl ::= formats [squence]
+                     | temporalOrigin
+                     | cordinateType
+                     | forwardRotationalAxis
+                     | cancelReference
+                     | rotation
+
+=================================== Formats ===================================
+
+formats ::= "G70"
+          | "G71"
+
+===============================================================================
+=== check here ???????????????? 
+
+coodinatesControl ::= inch
                     | metric
                     | absolute
                     | incremental
                     | temporaryOrigin
-                    
+
+-- ===========================================================================
+-- ====================== housing G26 and salience G27 =======================
+
+housing ::= host [housingBody]*
+
+host ::= "G26"
+       | "G27"
+
+housingBody ::= divided
+              | feedrate
+              | callSubRouting
+              | reapeatBlock
+              | sequence
+              | selectionCorrectTool
+              | desviation
+              | rouding
+              | lengtPolar
+              | centerPosition
+              | rotationalAxes
+              | linesAxes
+
+-- ============================================================================
+-- =================================== scala ==================================
+
+scalaBody ::= endSequence
+            | callSubRoutine
+            | repeatBlock
+            | sequence
+            | desviation
+            | rotationalAxes
+            | linesAxes
+
+-- ===========================================================================
+-- =============================== mirror image ==============================
+
+mirror ::= "G30"
+         | "G31"
+
+bodyMirror ::= sequence
+             | centerPosition
+             | linesAxes
+
+-- ===========================================================================
+-- ================================= execute =================================
+
+bodyExecute = sequence
+            | repeatBlock
+
+-- ============================================================================
+-- ============================== hole circle =================================
+
+holeBody ::= angles
+           | endSequence
+           | callSubRutine
+           | i --create 
+           | j --create
+           | repeatBlock
+           | desviation
+           | lengthPolar
+           | w --create
+           | x --create
+           | y --create
+
+
+-- ============================================================================
+-- ================================== body G25 ================================
+
+bodyPosRepeat ::= endSequence
+                | feedrade
+                | callSubRouting
+                | "I" number
+                | "J" number
+                | repeatBlock
+                | desviation
+                | lengthPolar
+                | "W" number
+                | "X" number
+                | "Y" number
+
+-- ============================================================================
+-- ==================================== cavity ================================
+
+cavityBody ::= divided
+             | endSequence
+             | callSubRouting
+             | sequence
+             | desviation
+             | 'X' number
+             | 'Z' number
+
+
+
+

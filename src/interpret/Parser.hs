@@ -383,7 +383,7 @@ pControlPrograma =  ParadaPrograma <$> pKeyword "00"
                 <|> CambioHerram   <$> pKeyword "06"
 
 -- ===============================================================================
---                     Remificaciones en programa 
+--                     Ramificaciones en programa 
 --                          N - H - E - L - P 
 -- ===============================================================================
 
