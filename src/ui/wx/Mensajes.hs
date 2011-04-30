@@ -14,7 +14,6 @@ abrirArchivo = "Abir archivo"
 salirArchivo :: String
 salirArchivo = "&Salir"
 
-
 menuOpciones :: String
 menuOpciones = "&Opciones"
 
@@ -29,4 +28,15 @@ acercade :: String
 acercade = "Emulador CNC Mach-9MP\n"++
            "Autor : Antonio Mamani\n"++
            "email : antonio.mq@gmail.com"
+
+-- ============================= Textos del video =============================
+-- ============================================================================
+
+alerta :: String
+alerta = "REPOSO"
+
+inicio :: String
+inicio = "EMERGENCIA !!\n"++
+         "CAE UMSS"
+       
 
