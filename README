@@ -11,9 +11,18 @@
 
  Dependence 
 
+for interpreter
 1. ghc, version >= 6.10 
 2. uulib
-3. qtHaskell
-4. HOpengl
-5. OpenGL
+
+depends on the library you want to use GUI:
+
+for GUI with WxHaskell
+1. wxcore
+2. wx
+
+for GUI with QtHaskell
+1. OpenGl
+2. HOpengl
+3. QtHaskell
 
