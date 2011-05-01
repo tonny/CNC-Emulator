@@ -1,14 +1,13 @@
 module Datas where
 import Graphics.UI.WX
 
-type Exit       = [Menus]
-type TipoMenu   = (PrincipalMenu,MenuInferior,OperacionMan) 
-type CuerpoMenu = (Var MenuPrincipal)-- ,OperacionManual,Mdi,EdicionPrograma)
-type Ambiente   = (Frame (),Panel (),TipoMenu, CuerpoMenu,Menus,Exit) 
---type Estados  = (Var Menus)
-
---getMenu :: Estados ->Var Menus
---getMenu (a) = a
+data Estados = Estado { menuActual       :: Menus
+                      , memoria          :: [Menus]
+                      , menuInferior     :: (MenuInferior,Bool)
+                      , paradaEmergencia :: Bool
+                      , servos           :: Bool
+                      }
+                
 
 data Menus = Principal -- esta caso llama a al data Principal Menu
            | Operacion
@@ -27,22 +26,7 @@ data PrincipalMenu = Reposo
                    | Monitor
                    | Soporte
                    | VacioMP
-{-                   
-                   | SeguridadPuerta
-                   | ParaHusPrinc
-                   | OperadorLibera
-                   | RetrocedeCah
-                   | JugHusHorario
-                   | JugHusAntiHora
-                   | ManualRefriger
-                   | OffRefriger
-                   | AutomatRefriger
-                   | OnTVirutas
-                   | OffTVirutas
-                   | LimpiezaProtec
-                   | Vacio
--}
-             deriving Eq
+            deriving Eq
 
 data MenuInferior =  OnMando
                    | SeguridadPuerta
@@ -58,6 +42,7 @@ data MenuInferior =  OnMando
                    | OffTVirutas
                    | LimpiezaProtec
                    | VacioMI
+            deriving Eq
 
 -- El data MenuPrincipal nos sirve para poder manejar todos los menus 
 -- que se puede utilizar en la pantalla principal del fresador

@@ -33,38 +33,38 @@ crearInterfaz fram pMain =
    menus <- variable [value := (VacioM) ]
 --   estados <- toIO menus
    estados <- toIO (fram,video,(VacioMP,VacioMI,VacioOM),(menuPrincipal),VacioM,[VacioM])
-   onMando <- crearBoton video "ON\nMANDO"            8 black
-   set onMando [visible :~ not]
-
-{-
-   reposo          <- crearBoton p "REPOSO"               8 black 
-   opeManual       <- crearBoton p "OPERACION\nMANUAL"    8 black
-   ediPrograma     <- crearBoton p "EDICION\nPROGRAMA"    8 black
-   cargarSalvar    <- crearBoton p "GUARDAR /\nSALIR"     8 black
-   refTrabajo      <- crearBoton p "REFER.\nTRABAJO"      8 black
-   pruebaPrograma  <- crearBoton p "HACER PRUE\nBA PROGR" 8 black
-   opeAutomatico   <- crearBoton p "OPERACION\nAUTOMANT." 8 black
-   monitor         <- crearBoton p "MONITOR"              8 black
-   soporte         <- crearBoton p "SOPORTE"              8 black
-   onMando         <- crearBoton p "ON\nMANDO"            8 black
-   seguridadPuerta <- crearBoton p "SEGURIDAD\nPUERTA"    8 black
-   paraHusPrinc    <- crearBoton p "PARA HUS.\nPRINC."    8 black
-   operadorLibera  <- crearBoton p "OPERADOR\nLIBERA"     8 black
-   retrocedeCah    <- crearBoton p "RETROCEDE\nCAH"       8 black
-   jugHusHorario   <- crearBoton p "JOG HUS.\nHORARIO"    8 black
-   jugHusAntiHora  <- crearBoton p "JOG HUS.\nANTI-HOR"   8 black
-   manualRefriger  <- crearBoton p "MANUAL\nREFRIGER"     8 black
-   offRefriger     <- crearBoton p "OFF\nREFRIGER"        8 black
-   automatRefriger <- crearBoton p "AUTOMAT.\nREGRIGER"   8 black
-   onTVirutas      <- crearBoton p "ON\nT.VIRUTAS"        8 black
-   offTVirutas     <- crearBoton p "OFF/RETR.\nT.VIRUTAS" 8 black
-   limpiezaProtec  <- crearBoton p "LIMPIEZA\nPROTEC. "   8 black
-   vacioMenu       <- crearBoton p ""                     1 black 
+   --creación de botones para los paneles 
+   reposo          <- crearBoton video "REPOSO"               8 black 
+   opeManual       <- crearBoton video "OPERACION\nMANUAL"    8 black
+   ediPrograma     <- crearBoton video "EDICION\nPROGRAMA"    8 black
+   cargarSalvar    <- crearBoton video "GUARDAR /\nSALIR"     8 black
+   refTrabajo      <- crearBoton video "REFER.\nTRABAJO"      8 black
+   pruebaPrograma  <- crearBoton video "HACER PRUE\nBA PROGR" 8 black
+   opeAutomatico   <- crearBoton video "OPERACION\nAUTOMANT." 8 black
+   monitor         <- crearBoton video "MONITOR"              8 black
+   soporte         <- crearBoton video "SOPORTE"              8 black
+   onMando         <- crearBoton video "ON\nMANDO"            8 black
+   seguridadPuerta <- crearBoton video "SEGURIDAD\nPUERTA"    8 black
+   paraHusPrinc    <- crearBoton video "PARA HUS.\nPRINC."    8 black
+   operadorLibera  <- crearBoton video "OPERADOR\nLIBERA"     8 black
+   retrocedeCah    <- crearBoton video "RETROCEDE\nCAH"       8 black
+   jugHusHorario   <- crearBoton video "JOG HUS.\nHORARIO"    8 black
+   jugHusAntiHora  <- crearBoton video "JOG HUS.\nANTI-HOR"   8 black
+   manualRefriger  <- crearBoton video "MANUAL\nREFRIGER"     8 black
+   offRefriger     <- crearBoton video "OFF\nREFRIGER"        8 black
+   automatRefriger <- crearBoton video "AUTOMAT.\nREGRIGER"   8 black
+   onTVirutas      <- crearBoton video "ON\nT.VIRUTAS"        8 black
+   offTVirutas     <- crearBoton video "OFF/RETR.\nT.VIRUTAS" 8 black
+   limpiezaProtec  <- crearBoton video "LIMPIEZA\nPROTEC. "   8 black
+   vacioMenu       <- crearBoton video ""                     1 black 
    
-   panelPrin <- [ reposo,opeManual,ediPrograma,cargarSalvar,refTrabajo,pruebaPrograma
+   panelPrin <-toIO [ reposo,opeManual,ediPrograma,cargarSalvar,refTrabajo,pruebaPrograma
                 , opeAutomatico,monitor,soporte,onMando,seguridadPuerta,paraHusPrinc
-                , operadorLibera,retrocedeCah,jugHusHorario,jusHusAntiHora,manualRefefriger]
--}
+                , operadorLibera,retrocedeCah,jugHusHorario,jugHusAntiHora,manualRefriger
+                , offRefriger,automatRefriger,onTVirutas, offTVirutas,limpiezaProtec,vacioMenu]
+   mapM_ (\ bo -> set bo [visible :~ not]) panelPrin
+   mapM_ (\ bo -> set bo [clientSize := sz 75 35]) panelPrin
+
   -------------------- Botones de la Pantalla ---------------------------------
    asc <- crearBoton pMain "ABC" 14 white
    set asc [visible :~ not]
@@ -142,6 +142,7 @@ crearInterfaz fram pMain =
    igual <- crearBoton pMain "="    14 blue
    shift <- crearBoton pMain "SHIFT" 8 yellow 
    enter <- crearBoton pMain "ENTER" 8 blue
+   set enter [on command := esRojo estado menuPrincipal]
    let coment = [coma,cero,punto,mas,igual,shift,enter]
    set shift [on command := mostrarMenu estado video textVideo alert menuPrincipal onMando] -- Avilita el menu principal
    ----------------------------------------------------------------------------
@@ -371,7 +372,7 @@ menuPrin p = MenuPrin { reposo          = crearBoton p "REPOSO"               8 
                       , jugHusHorario   = crearBoton p "JOG HUS.\nHORARIO"    8 black
                       , jugHusAntiHora  = crearBoton p "JOG HUS.\nANTI-HOR"   8 black
                       , manualRefriger  = crearBoton p "MANUAL\nREFRIGER"     8 black
-                      , offRefriger     = crearBoton p "OFF\nREFRIGER"         8 black
+                      , offRefriger     = crearBoton p "OFF\nREFRIGER"        8 black
                       , automatRefriger = crearBoton p "AUTOMAT.\nREGRIGER"   8 black
                       , onTVirutas      = crearBoton p "ON\nT.VIRUTAS"        8 black
                       , offTVirutas     = crearBoton p "OFF/RETR.\nT.VIRUTAS" 8 black
@@ -408,7 +409,14 @@ activar f am mp om =
                    varSet mp (actualizarOnMando (toIO om) (get mp value))
       _      -> set f [text := "preciono F10"]
      return ()
-    
+
+esRojo :: StatusField -> Var MenuPrincipal -> IO ()
+esRojo s mp = do onc <- onMando =<< (get mp value)
+                 col <- get onc bgcolor
+                 case col of
+                  red -> set s [text := "SIiiii"]
+                  _    -> set s [text := "Npooo"]
+
 actualizarOnMando :: IO (Button ()) -> IO MenuPrincipal -> MenuPrincipal
 actualizarOnMando b mp = MenuPrin { reposo          = reposo         =<< mp     
                                   , opeManual       = opeManual      =<< mp
