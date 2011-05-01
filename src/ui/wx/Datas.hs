@@ -5,6 +5,10 @@ type Exit       = [Menus]
 type TipoMenu   = (PrincipalMenu,MenuInferior,OperacionMan) 
 type CuerpoMenu = (Var MenuPrincipal)-- ,OperacionManual,Mdi,EdicionPrograma)
 type Ambiente   = (Frame (),Panel (),TipoMenu, CuerpoMenu,Menus,Exit) 
+--type Estados  = (Var Menus)
+
+--getMenu :: Estados ->Var Menus
+--getMenu (a) = a
 
 data Menus = Principal -- esta caso llama a al data Principal Menu
            | Operacion

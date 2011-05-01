@@ -9,53 +9,6 @@ type Texto  = String
 type Tamano = Int
 type Alerta = TextCtrl ()
 
--- Funcion que nos devuleve los menus predeterminados, sin que estos esten 
--- activos, eso quiere decir que no estan pintados
-menuPrin :: Panel () -> MenuPrincipal
-menuPrin p = MenuPrin { reposo          = crearBoton p "REPOSO"               8 black 
-                      , opeManual       = crearBoton p "OPERACION\nMANUAL"    8 black
-                      , ediPrograma     = crearBoton p "EDICION\nPROGRAMA"    8 black
-                      , cargarSalvar    = crearBoton p "GUARDAR /\nSALIR"     8 black
-                      , refTrabajo      = crearBoton p "REFER.\nTRABAJO"      8 black
-                      , pruebaPrograma  = crearBoton p "HACER PRUE\nBA PROGR" 8 black
-                      , opeAutomatico   = crearBoton p "OPERACION\nAUTOMANT." 8 black
-                      , monitor         = crearBoton p "MONITOR"              8 black
-                      , soporte         = crearBoton p "SOPORTE"              8 black
-                      , onMando         = crearBoton p "ON\nMANDO"            8 black
-                      , seguridadPuerta = crearBoton p "SEGURIDAD\nPUERTA"    8 black
-                      , paraHusPrinc    = crearBoton p "PARA HUS.\nPRINC."    8 black
-                      , operadorLibera  = crearBoton p "OPERADOR\nLIBERA"     8 black
-                      , retrocedeCah    = crearBoton p "RETROCEDE\nCAH"       8 black
-                      , jugHusHorario   = crearBoton p "JOG HUS.\nHORARIO"    8 black
-                      , jugHusAntiHora  = crearBoton p "JOG HUS.\nANTI-HOR"   8 black
-                      , manualRefriger  = crearBoton p "MANUAL\nREFRIGER"     8 black
-                      , offRefriger     = crearBoton p "OFF\nREFRIGER"         8 black
-                      , automatRefriger = crearBoton p "AUTOMAT.\nREGRIGER"   8 black
-                      , onTVirutas      = crearBoton p "ON\nT.VIRUTAS"        8 black
-                      , offTVirutas     = crearBoton p "OFF/RETR.\nT.VIRUTAS" 8 black
-                      , limpiezaProtec  = crearBoton p "LIMPIEZA\nPROTEC. "   8 black
-                      , vacioMenu       = crearBoton p ""                     1 black 
-                      }
-
--- Funcion para crear Textos, renderizando algunas caracterizticas basicas que
--- debe tener un texto por defecto.
-crearText :: Panel() -> Texto -> Color -> Tamano -> Int -> Int -> IO (TextCtrl ())
-crearText p t cf ta l a = textCtrlRich p [ bgcolor    := cf
-                                         , textColor  := green
-                                         , font       := fontFixed { _fontSize = ta }
-                                         , text       := t
-                                         , clientSize := sz l a
-                                         ]
-
--- Funcion que crear botones, renderizando algunas caracteristicas basicas que
--- debe tener un bonton por defecto.
-crearBoton :: Panel () -> Texto -> Tamano -> Color -> IO(Button ())
-crearBoton p t f c = button p [ clientSize := sz 45 40
-                              , bgcolor    := c
-                              , font       := fontFixed { _fontSize = f }
-                              , text       := t
-                              , enabled    :~ not] 
-
 -- La funcion crearInterfaz agrega todos lo elementos que se encesita para
 -- el funcionamiento de la fresadora, tambien maneja todos los estados y 
 -- errores que se produce al momento de manipular la pantalla.
@@ -76,11 +29,45 @@ crearInterfaz fram pMain =
    menuPrincipal <-variable [ value := menuPrin video]
 
    --------------------- Barra de estador ---------------------------------------
-   estado   <- statusField   [text := "Maquina Pagada"]
-
+   estado  <- statusField   [text := "Maquina Pagada"]
+   menus <- variable [value := (VacioM) ]
+--   estados <- toIO menus
    estados <- toIO (fram,video,(VacioMP,VacioMI,VacioOM),(menuPrincipal),VacioM,[VacioM])
+   onMando <- crearBoton video "ON\nMANDO"            8 black
+   set onMando [visible :~ not]
 
+{-
+   reposo          <- crearBoton p "REPOSO"               8 black 
+   opeManual       <- crearBoton p "OPERACION\nMANUAL"    8 black
+   ediPrograma     <- crearBoton p "EDICION\nPROGRAMA"    8 black
+   cargarSalvar    <- crearBoton p "GUARDAR /\nSALIR"     8 black
+   refTrabajo      <- crearBoton p "REFER.\nTRABAJO"      8 black
+   pruebaPrograma  <- crearBoton p "HACER PRUE\nBA PROGR" 8 black
+   opeAutomatico   <- crearBoton p "OPERACION\nAUTOMANT." 8 black
+   monitor         <- crearBoton p "MONITOR"              8 black
+   soporte         <- crearBoton p "SOPORTE"              8 black
+   onMando         <- crearBoton p "ON\nMANDO"            8 black
+   seguridadPuerta <- crearBoton p "SEGURIDAD\nPUERTA"    8 black
+   paraHusPrinc    <- crearBoton p "PARA HUS.\nPRINC."    8 black
+   operadorLibera  <- crearBoton p "OPERADOR\nLIBERA"     8 black
+   retrocedeCah    <- crearBoton p "RETROCEDE\nCAH"       8 black
+   jugHusHorario   <- crearBoton p "JOG HUS.\nHORARIO"    8 black
+   jugHusAntiHora  <- crearBoton p "JOG HUS.\nANTI-HOR"   8 black
+   manualRefriger  <- crearBoton p "MANUAL\nREFRIGER"     8 black
+   offRefriger     <- crearBoton p "OFF\nREFRIGER"        8 black
+   automatRefriger <- crearBoton p "AUTOMAT.\nREGRIGER"   8 black
+   onTVirutas      <- crearBoton p "ON\nT.VIRUTAS"        8 black
+   offTVirutas     <- crearBoton p "OFF/RETR.\nT.VIRUTAS" 8 black
+   limpiezaProtec  <- crearBoton p "LIMPIEZA\nPROTEC. "   8 black
+   vacioMenu       <- crearBoton p ""                     1 black 
+   
+   panelPrin <- [ reposo,opeManual,ediPrograma,cargarSalvar,refTrabajo,pruebaPrograma
+                , opeAutomatico,monitor,soporte,onMando,seguridadPuerta,paraHusPrinc
+                , operadorLibera,retrocedeCah,jugHusHorario,jusHusAntiHora,manualRefefriger]
+-}
   -------------------- Botones de la Pantalla ---------------------------------
+   asc <- crearBoton pMain "ABC" 14 white
+   set asc [visible :~ not]
    a <- crearBoton pMain "A" 14 white
    b <- crearBoton pMain "B" 14 white
    c <- crearBoton pMain "C" 14 white
@@ -156,7 +143,7 @@ crearInterfaz fram pMain =
    shift <- crearBoton pMain "SHIFT" 8 yellow 
    enter <- crearBoton pMain "ENTER" 8 blue
    let coment = [coma,cero,punto,mas,igual,shift,enter]
-   set shift [on command := mostrarMenu estado video textVideo alert menuPrincipal] -- Avilita el menu principal
+   set shift [on command := mostrarMenu estado video textVideo alert menuPrincipal onMando] -- Avilita el menu principal
    ----------------------------------------------------------------------------
    f1 <- crearBoton pMain "F1" 14 white
    f2 <- crearBoton pMain "F2" 14 white
@@ -171,7 +158,7 @@ crearInterfaz fram pMain =
    ----------------------------------------------------------------------------
    up   <- crearBoton pMain "^"    18 blue
    f10  <- crearBoton pMain "F10"  14 white
-   set f10 [ on command := do activar estado estados
+   set f10 [ on command := do activar estado estados menuPrincipal onMando
                               repaint video]
    f11  <- crearBoton pMain "F11"  14 white
    f12  <- crearBoton pMain "F12"  14 white
@@ -291,8 +278,8 @@ cambiar s p te ca al bo =
 
 -- Funciona que se encarga de dibujar y dar funcionalidad a los menus del video
 -- de la fresadora.
-mostrarMenu :: StatusField -> Panel() -> Alerta -> Alerta ->Var MenuPrincipal -> IO()
-mostrarMenu s p t al mp =
+mostrarMenu :: StatusField -> Panel() -> Alerta -> Alerta ->Var MenuPrincipal -> Button () -> IO()
+mostrarMenu s p t al mp onm =
   do set s [text := "La fresa ya no esta en parada de emergencia"]
      set t [ bgcolor := grey
            , textColor := green
@@ -320,8 +307,9 @@ mostrarMenu s p t al mp =
      sop <- soporte =<< (get mp value)
      set sop [clientSize := sz 75 40]
 
-     onm <- onMando =<< (get mp value)
+     --onm <- onMando =<< (get mp value)
      set onm [clientSize := sz 75 30]
+     set onm [visible :~ not]
      sep <- seguridadPuerta =<< (get mp value)
      set sep [clientSize := sz 75 30]
      php <- paraHusPrinc =<< (get mp value)
@@ -363,15 +351,87 @@ mostrarMenu s p t al mp =
     -- set p [ layout :=  column 0 [ row 0 [ hfill $ widget a] ]]
      repaint p
 
+-- Funcion que nos devuleve los menus predeterminados, sin que estos esten 
+-- activos, eso quiere decir que no estan pintados
+menuPrin :: Panel () -> MenuPrincipal
+menuPrin p = MenuPrin { reposo          = crearBoton p "REPOSO"               8 black 
+                      , opeManual       = crearBoton p "OPERACION\nMANUAL"    8 black
+                      , ediPrograma     = crearBoton p "EDICION\nPROGRAMA"    8 black
+                      , cargarSalvar    = crearBoton p "GUARDAR /\nSALIR"     8 black
+                      , refTrabajo      = crearBoton p "REFER.\nTRABAJO"      8 black
+                      , pruebaPrograma  = crearBoton p "HACER PRUE\nBA PROGR" 8 black
+                      , opeAutomatico   = crearBoton p "OPERACION\nAUTOMANT." 8 black
+                      , monitor         = crearBoton p "MONITOR"              8 black
+                      , soporte         = crearBoton p "SOPORTE"              8 black
+                      , onMando         = crearBoton p "ON\nMANDO"            8 black
+                      , seguridadPuerta = crearBoton p "SEGURIDAD\nPUERTA"    8 black
+                      , paraHusPrinc    = crearBoton p "PARA HUS.\nPRINC."    8 black
+                      , operadorLibera  = crearBoton p "OPERADOR\nLIBERA"     8 black
+                      , retrocedeCah    = crearBoton p "RETROCEDE\nCAH"       8 black
+                      , jugHusHorario   = crearBoton p "JOG HUS.\nHORARIO"    8 black
+                      , jugHusAntiHora  = crearBoton p "JOG HUS.\nANTI-HOR"   8 black
+                      , manualRefriger  = crearBoton p "MANUAL\nREFRIGER"     8 black
+                      , offRefriger     = crearBoton p "OFF\nREFRIGER"         8 black
+                      , automatRefriger = crearBoton p "AUTOMAT.\nREGRIGER"   8 black
+                      , onTVirutas      = crearBoton p "ON\nT.VIRUTAS"        8 black
+                      , offTVirutas     = crearBoton p "OFF/RETR.\nT.VIRUTAS" 8 black
+                      , limpiezaProtec  = crearBoton p "LIMPIEZA\nPROTEC. "   8 black
+                      , vacioMenu       = crearBoton p ""                     1 black 
+                      }
 
-activar :: StatusField -> Ambiente -> IO ()
-activar f am = 
+-- Funcion para crear Textos, renderizando algunas caracterizticas basicas que
+-- debe tener un texto por defecto.
+crearText :: Panel() -> Texto -> Color -> Tamano -> Int -> Int -> IO (TextCtrl ())
+crearText p t cf ta l a = textCtrlRich p [ bgcolor    := cf
+                                         , textColor  := green
+                                         , font       := fontFixed { _fontSize = ta }
+                                         , text       := t
+                                         , clientSize := sz l a
+                                         ]
+
+-- Funcion que crear botones, renderizando algunas caracteristicas basicas que
+-- debe tener un bonton por defecto.
+crearBoton :: Panel () -> Texto -> Tamano -> Color -> IO(Button ())
+crearBoton p t f c = button p [ clientSize := sz 45 40
+                              , bgcolor    := c
+                              , font       := fontFixed { _fontSize = f }
+                              , text       := t
+                              , enabled    :~ not] 
+
+activar :: StatusField -> Ambiente -> Var MenuPrincipal -> Button () -> IO ()
+activar f am mp om = 
   do case (getMenu am) of
-      VacioM ->  do o <- (onMando =<< (get (getCuerpoP  (getCuerpoMenu am)) value ))
-                    set o [ bgcolor := red ] 
-                    set f [text := "Activo ON MANDO"]
+      VacioM -> do-- let a = (getCuerpoP (getCuerpoMenu am))
+                  -- o <- onMando =<< (get a value)
+                   set om [ bgcolor := red ] 
+                   set f [text := "Activo ON MANDO"]
+                   varSet mp (actualizarOnMando (toIO om) (get mp value))
       _      -> set f [text := "preciono F10"]
+     return ()
+    
+actualizarOnMando :: IO (Button ()) -> IO MenuPrincipal -> MenuPrincipal
+actualizarOnMando b mp = MenuPrin { reposo          = reposo         =<< mp     
+                                  , opeManual       = opeManual      =<< mp
+                                  , ediPrograma     = ediPrograma    =<< mp
+                                  , cargarSalvar    = cargarSalvar   =<< mp
+                                  , refTrabajo      = refTrabajo     =<< mp
+                                  , pruebaPrograma  = pruebaPrograma =<< mp
+                                  , opeAutomatico   = opeAutomatico  =<< mp
+                                  , monitor         = monitor        =<< mp
+                                  , soporte         = soporte        =<< mp
+                                  , onMando         = b
+                                  , seguridadPuerta = seguridadPuerta =<< mp
+                                  , paraHusPrinc    = paraHusPrinc    =<< mp
+                                  , operadorLibera  = operadorLibera  =<< mp
+                                  , retrocedeCah    = retrocedeCah    =<< mp
+                                  , jugHusHorario   = jugHusHorario   =<< mp
+                                  , jugHusAntiHora  = jugHusAntiHora  =<< mp
+                                  , manualRefriger  = manualRefriger  =<< mp
+                                  , offRefriger     = offRefriger     =<< mp 
+                                  , automatRefriger = automatRefriger =<< mp
+                                  , onTVirutas      = onTVirutas      =<< mp
+                                  , offTVirutas     = offTVirutas     =<< mp
+                                  , limpiezaProtec  = limpiezaProtec  =<< mp
+                                  , vacioMenu       = vacioMenu       =<< mp
+                                  }
 
---     set f [statusBar := [est]]
---     set (getFrame am) [ statusBar := [estado]]
-     
