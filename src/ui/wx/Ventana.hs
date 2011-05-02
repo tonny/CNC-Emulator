@@ -26,14 +26,32 @@ crearInterfaz fram pMain =
                                    , text       := "Fresa Apagada"
                                    ]
 
-   menuPrincipal <-variable [ value := menuPrin video]
+--   menuPrincipal <-variable [ value := menuPrin video]
 
    --------------------- Barra de estador ---------------------------------------
    estado  <- statusField   [text := "Maquina Pagada"]
-   menus <- variable [value := (VacioM) ]
---   estados <- toIO menus
-   estados <- toIO (fram,video,(VacioMP,VacioMI,VacioOM),(menuPrincipal),VacioM,[VacioM])
-   --creación de botones para los paneles 
+
+   menuActual <- variable [value := VacioM]
+
+   menus <- variable [value := [VacioM]]
+
+   menuInf <- variable [value := (VacioMI,False)]
+
+   paradaEmergencia <- variable [value := False]
+
+   servos <- variable [value := False]
+  
+   ambiente <- toIO (menuActual,menus,menuInf,paradaEmergencia,servos)
+
+   {-
+   let amb = Estado { menuActual       = VacioM
+                    , memoria          = []
+                    , menuInferior     = (VacioMI,False)
+                    , paradaEmergencia = False
+                    , servos           = False}
+   ambiente <- variable [value := amb]
+   -}
+   ---------------creación de botones para los paneles video ---------------------
    reposo          <- crearBoton video "REPOSO"               8 black 
    opeManual       <- crearBoton video "OPERACION\nMANUAL"    8 black
    ediPrograma     <- crearBoton video "EDICION\nPROGRAMA"    8 black
@@ -58,16 +76,25 @@ crearInterfaz fram pMain =
    limpiezaProtec  <- crearBoton video "LIMPIEZA\nPROTEC. "   8 black
    vacioMenu       <- crearBoton video ""                     1 black 
    
-   panelPrin <-toIO [ reposo,opeManual,ediPrograma,cargarSalvar,refTrabajo,pruebaPrograma
-                , opeAutomatico,monitor,soporte,onMando,seguridadPuerta,paraHusPrinc
-                , operadorLibera,retrocedeCah,jugHusHorario,jugHusAntiHora,manualRefriger
-                , offRefriger,automatRefriger,onTVirutas, offTVirutas,limpiezaProtec,vacioMenu]
-   mapM_ (\ bo -> set bo [visible :~ not]) panelPrin
-   mapM_ (\ bo -> set bo [clientSize := sz 75 35]) panelPrin
+   paneles <-toIO [ reposo,opeManual,ediPrograma,cargarSalvar,refTrabajo,pruebaPrograma
+                    , opeAutomatico,monitor,soporte,onMando,seguridadPuerta,paraHusPrinc
+                    , operadorLibera,retrocedeCah,jugHusHorario,jugHusAntiHora,manualRefriger
+                    , offRefriger,automatRefriger,onTVirutas, offTVirutas,limpiezaProtec,vacioMenu]
 
+   mapM_ (\ bo -> set bo [visible :~ not]) paneles
+   mapM_ (\ bo -> set bo [clientSize := sz 75 35]) paneles
+
+   let menuPrincipal =  [ reposo, opeManual, ediPrograma, cargarSalvar, refTrabajo
+                    , pruebaPrograma, opeAutomatico, monitor, soporte]
+--   menuPrincipal <- variable [value := mp]
+
+   let menuInferior = [ [onMando, seguridadPuerta, paraHusPrinc, operadorLibera, retrocedeCah]
+         , [jugHusHorario, jugHusAntiHora, manualRefriger, offRefriger, automatRefriger]
+         , [onTVirutas, offTVirutas, limpiezaProtec, vacioMenu, vacioMenu]]
+--   menuInferior <- variable [value := mi]
+
+  ----------------------------------------------------------------------------- 
   -------------------- Botones de la Pantalla ---------------------------------
-   asc <- crearBoton pMain "ABC" 14 white
-   set asc [visible :~ not]
    a <- crearBoton pMain "A" 14 white
    b <- crearBoton pMain "B" 14 white
    c <- crearBoton pMain "C" 14 white
@@ -142,9 +169,10 @@ crearInterfaz fram pMain =
    igual <- crearBoton pMain "="    14 blue
    shift <- crearBoton pMain "SHIFT" 8 yellow 
    enter <- crearBoton pMain "ENTER" 8 blue
-   set enter [on command := esRojo estado menuPrincipal]
+--   set enter [on command := esRojo estado menuPrincipal]
    let coment = [coma,cero,punto,mas,igual,shift,enter]
-   set shift [on command := mostrarMenu estado video textVideo alert menuPrincipal onMando] -- Avilita el menu principal
+   set shift [on command := mostrarMenu estado ambiente video textVideo alert menuPrincipal (head  menuInferior)] -- Avilita el menu principal
+                        
    ----------------------------------------------------------------------------
    f1 <- crearBoton pMain "F1" 14 white
    f2 <- crearBoton pMain "F2" 14 white
@@ -159,8 +187,8 @@ crearInterfaz fram pMain =
    ----------------------------------------------------------------------------
    up   <- crearBoton pMain "^"    18 blue
    f10  <- crearBoton pMain "F10"  14 white
-   set f10 [ on command := do activar estado estados menuPrincipal onMando
-                              repaint video]
+--   set f10 [ on command := do activar estado estados menuPrincipal onMando
+ --                             repaint video]
    f11  <- crearBoton pMain "F11"  14 white
    f12  <- crearBoton pMain "F12"  14 white
    f13  <- crearBoton pMain "F13"  14 white
@@ -260,7 +288,6 @@ crearInterfaz fram pMain =
             ]
    repaint f
 ----------------------------------------------------------------------------
-
 -- funciona que activa y desactiva la funcionalidad del teclado de la pantalla
 -- y a la vez mustra las alertas por pantalla.
 cambiar :: StatusField -> Panel() -> Alerta -> Texto -> Alerta -> [Button()] -> IO()
@@ -279,47 +306,46 @@ cambiar s p te ca al bo =
 
 -- Funciona que se encarga de dibujar y dar funcionalidad a los menus del video
 -- de la fresadora.
-mostrarMenu :: StatusField -> Panel() -> Alerta -> Alerta ->Var MenuPrincipal -> Button () -> IO()
-mostrarMenu s p t al mp onm =
-  do set s [text := "La fresa ya no esta en parada de emergencia"]
-     set t [ bgcolor := grey
-           , textColor := green
-           , text := "IND.ROMI S/A\n REV 80-001 \n CNC MACH9" 
-           ]
-     set al [text := "Servos Desconec."]
-     rep <- reposo =<< (get mp value)
-     set rep [clientSize := sz 70 33]
+-- AGARRAR LOS CASOS EN LOS CUALES SE ENCUATRA LA FRESA PARA CAMBIAR LOS PANELES ojo
+mostrarMenu :: StatusField -> Ambiente -> Panel() -> Alerta -> Alerta -> [Button ()] -> [Button ()] -> IO()
+mostrarMenu s st p t al mp mi =
+  do ma <- get (getMenu st) value
+     case ma of
+      VacioM    -> do
+                     set s [text := "La fresa ya no esta en parada de emergencia"]
+                     set t [ bgcolor := grey
+                           , textColor := green
+                           , text := "IND.ROMI S/A\n REV 80-001 \n CNC MACH9" 
+                           ]
+                     varSet (getMenu st) Principal
+                     set al [text := "Servos Desconec."]
+                     mapM_ (\ bo -> set bo [visible :~ not]) mp
+                     mapM_ (\ bo -> set bo [visible :~ not]) mi
+      Principal -> do set al [text := "Servos Desconec."]
+                      set t [ bgcolor := grey
+                            , textColor := green
+                            , text := "IND.ROMI S/A\n REV 80-001 \n CNC MACH9" 
+                            ]
+                      varSet (getMenu st) VacioM
+                      set s [text := "Funciona!!!"]
+      _         -> do set s [text := "NOo funciona"]
 
---     ven <- panel p [bgcolor := yellow]
-     opm <- opeManual =<< (get mp value)
-     set opm [clientSize := sz 75 33]
-     edp <- ediPrograma =<< (get mp value)
-     set edp [clientSize := sz 75 33]
-     cas <- cargarSalvar =<<(get mp value)
-     set cas [clientSize := sz 75 35]
-     ref <- refTrabajo =<< (get mp value)
-     set ref [clientSize := sz 75 35]
-     prp <- pruebaPrograma =<< (get mp value)
-     set prp [clientSize := sz 75 40]
-     oau <- opeAutomatico =<< (get mp value)
-     set oau [clientSize := sz 75 40]
-     mon <- monitor =<< (get mp value)
-     set mon [clientSize := sz 75 40]
-     sop <- soporte =<< (get mp value)
-     set sop [clientSize := sz 75 40]
+     rep <- toIO (mp !! 0)
+     opm <- toIO (mp !! 1)
+     edp <- toIO (mp !! 2)
+     cas <- toIO (mp !! 3)
+     ref <- toIO (mp !! 4)
+     prp <- toIO (mp !! 5)
+     oau <- toIO (mp !! 6)
+     mon <- toIO (mp !! 7)
+     sop <- toIO (mp !! 8)
 
-     --onm <- onMando =<< (get mp value)
-     set onm [clientSize := sz 75 30]
-     set onm [visible :~ not]
-     sep <- seguridadPuerta =<< (get mp value)
-     set sep [clientSize := sz 75 30]
-     php <- paraHusPrinc =<< (get mp value)
-     set php [clientSize := sz 75 30]
-     opl <- operadorLibera =<< (get mp value)
-     set opl [clientSize := sz 75 30]
-     rec <- retrocedeCah =<< (get mp value)
-     set rec [clientSize := sz 75 30]
---     tes <- crearBoton p "test" 10 black
+     onm <- toIO (mi !! 0)
+     sep <- toIO (mi !! 1)
+     php <- toIO (mi !! 2)
+     opl <- toIO (mi !! 3)
+     rec <- toIO (mi !! 4)
+
      set p [ layout := column 1 
                        [ row 1 [ column 1
                                  [ row 1 [ column 1 [ row 1 [fill $ widget al]
@@ -336,7 +362,7 @@ mostrarMenu s p t al mp onm =
                                                      ,  widget mon
                                                      ]]
                                  , row 10 [ hglue, hglue
-                                         , (hfill . widget) onm
+                                         , hfill $ widget $ onm
                                          , (hfill . widget) sep
                                          , (hfill . widget) php
                                          , (hfill . widget) opl
@@ -399,6 +425,7 @@ crearBoton p t f c = button p [ clientSize := sz 45 40
                               , text       := t
                               , enabled    :~ not] 
 
+{-
 activar :: StatusField -> Ambiente -> Var MenuPrincipal -> Button () -> IO ()
 activar f am mp om = 
   do case (getMenu am) of
@@ -416,9 +443,10 @@ esRojo s mp = do onc <- onMando =<< (get mp value)
                  case col of
                   red -> set s [text := "SIiiii"]
                   _    -> set s [text := "Npooo"]
+-}
 
 actualizarOnMando :: IO (Button ()) -> IO MenuPrincipal -> MenuPrincipal
-actualizarOnMando b mp = MenuPrin { reposo          = reposo         =<< mp     
+actualizarOnMando b mp = MenuPrin { reposo          = reposo         =<< mp 
                                   , opeManual       = opeManual      =<< mp
                                   , ediPrograma     = ediPrograma    =<< mp
                                   , cargarSalvar    = cargarSalvar   =<< mp

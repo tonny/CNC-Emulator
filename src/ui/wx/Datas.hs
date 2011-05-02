@@ -1,13 +1,19 @@
 module Datas where
 import Graphics.UI.WX
 
+{-
 data Estados = Estado { menuActual       :: Menus
                       , memoria          :: [Menus]
                       , menuInferior     :: (MenuInferior,Bool)
                       , paradaEmergencia :: Bool
                       , servos           :: Bool
                       }
-                
+-}
+
+type Ambiente = ( Var Menus,Var [Menus],Var (MenuInferior,Bool), Var Bool,Var Bool)
+
+getMenu :: Ambiente -> Var Menus
+getMenu (a,_,_,_,_) = a
 
 data Menus = Principal -- esta caso llama a al data Principal Menu
            | Operacion
@@ -119,7 +125,7 @@ data EdicionPrograma = EdiPrograma { display     :: IO (Button ())
                                    , direct      :: IO (Button ())
                                    }
 
-
+{-
 getFrame :: Ambiente -> Frame ()
 getFrame (f,_,_,_,_,_) = f
 
@@ -149,6 +155,7 @@ getMenuOperacionMan (_,_,o) = o
 
 getCuerpoP :: CuerpoMenu -> Var MenuPrincipal
 getCuerpoP (a) = a
+-}
 
 toIO :: t -> IO(t)
 toIO t = do {return(t)}
