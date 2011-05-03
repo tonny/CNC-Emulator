@@ -1,19 +1,16 @@
 module Datas where
 import Graphics.UI.WX
 
-{-
-data Estados = Estado { menuActual       :: Menus
-                      , memoria          :: [Menus]
-                      , menuInferior     :: (MenuInferior,Bool)
-                      , paradaEmergencia :: Bool
-                      , servos           :: Bool
-                      }
--}
+type Posicion = Int
+type MemoriaInf = MenuInferior
+type MemoriaPos = Int
 
-type Ambiente = ( Var Menus,Var [Menus],Var (MenuInferior,Bool), Var Bool,Var Bool)
-
-getMenu :: Ambiente -> Var Menus
-getMenu (a,_,_,_,_) = a
+type Ambiente = ( Var Menus --menu que esta pintado en el panel video
+                , Var [Menus] --memoria que guarda los paneles aneteriores
+                , Var (MenuInferior,Posicion,MemoriaInf,MemoriaPos)
+                , Var Bool -- parada de emergencia
+                , Var Bool  -- servos Activo
+                )
 
 data Menus = Principal -- esta caso llama a al data Principal Menu
            | Operacion
@@ -125,37 +122,32 @@ data EdicionPrograma = EdiPrograma { display     :: IO (Button ())
                                    , direct      :: IO (Button ())
                                    }
 
-{-
-getFrame :: Ambiente -> Frame ()
-getFrame (f,_,_,_,_,_) = f
+getMenu :: Ambiente -> Var Menus
+getMenu (a,_,_,_,_) = a
 
-getPanel :: Ambiente -> Panel ()
-getPanel (_,p,_,_,_,_) = p
+getMenus :: Ambiente -> Var [Menus]
+getMenus (_,a,_,_,_) = a
 
-getTipoMenu :: Ambiente -> TipoMenu
-getTipoMenu (_,_,m,_,_,_) = m
+getMenuInf :: Ambiente -> Var (MenuInferior,Posicion,MemoriaInf,MemoriaPos)
+getMenuInf (_,_,a,_,_) = a
 
-getCuerpoMenu :: Ambiente -> CuerpoMenu
-getCuerpoMenu (_,_,_,m,_,_) = m
+getParadaEmer :: Ambiente -> Var Bool
+getParadaEmer (_,_,_,a,_) = a
 
-getMenu :: Ambiente -> Menus
-getMenu (_,_,_,_,m,_) = m
+getServos :: Ambiente -> Var Bool
+getServos (_,_,_,_,a) = a
 
-getExit :: Ambiente -> Exit
-getExit (_,_,_,_,_,m) = m
+primero :: (MenuInferior,Posicion,MemoriaInf,MemoriaPos) -> MenuInferior 
+primero (a,_,_,_) = a
 
-getMenuPrincipal :: TipoMenu -> PrincipalMenu
-getMenuPrincipal (p,_,_) = p
+segundo :: (MenuInferior,Posicion,MemoriaInf,MemoriaPos) -> Posicion
+segundo (_,a,_,_) = a
 
-getMenuInferior :: TipoMenu -> MenuInferior
-getMenuInferior (_,i,_) = i
+tercero :: (MenuInferior,Posicion,MemoriaInf,MemoriaPos) -> MemoriaInf
+tercero (_, _,a,_) = a
 
-getMenuOperacionMan :: TipoMenu -> OperacionMan
-getMenuOperacionMan (_,_,o) = o
+cuarto :: (MenuInferior,Posicion,MemoriaInf,MemoriaPos) -> MemoriaPos
+cuarto (_, _,_,a) = a
 
-getCuerpoP :: CuerpoMenu -> Var MenuPrincipal
-getCuerpoP (a) = a
--}
-
-toIO :: t -> IO(t)
+toIO :: t -> IO t
 toIO t = do {return(t)}

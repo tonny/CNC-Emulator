@@ -35,13 +35,13 @@ crearInterfaz fram pMain =
 
    menus <- variable [value := [VacioM]]
 
-   menuInf <- variable [value := (VacioMI,False)]
+   menuInf <- variable [value := (VacioMI,0,VacioMI,0)]
 
    paradaEmergencia <- variable [value := False]
 
    servos <- variable [value := False]
   
-   ambiente <- toIO (menuActual,menus,menuInf,paradaEmergencia,servos)
+   ambiente <- return $ (menuActual,menus,menuInf,paradaEmergencia,servos)
 
    {-
    let amb = Estado { menuActual       = VacioM
@@ -74,27 +74,30 @@ crearInterfaz fram pMain =
    onTVirutas      <- crearBoton video "ON\nT.VIRUTAS"        8 black
    offTVirutas     <- crearBoton video "OFF/RETR.\nT.VIRUTAS" 8 black
    limpiezaProtec  <- crearBoton video "LIMPIEZA\nPROTEC. "   8 black
-   vacioMenu       <- crearBoton video ""                     1 black 
-   
-   paneles <-toIO [ reposo,opeManual,ediPrograma,cargarSalvar,refTrabajo,pruebaPrograma
-                    , opeAutomatico,monitor,soporte,onMando,seguridadPuerta,paraHusPrinc
-                    , operadorLibera,retrocedeCah,jugHusHorario,jugHusAntiHora,manualRefriger
-                    , offRefriger,automatRefriger,onTVirutas, offTVirutas,limpiezaProtec,vacioMenu]
+   vacioMenu1      <- crearBoton video "       "          8 black 
+   vacioMenu2      <- crearBoton video "       "          8 black 
+  
+   paneles <-toIO [ reposo,opeManual,ediPrograma,cargarSalvar,refTrabajo,pruebaPrograma 
+                  , opeAutomatico,monitor,soporte,onMando,seguridadPuerta,paraHusPrinc
+                  , operadorLibera,retrocedeCah,jugHusHorario,jugHusAntiHora,manualRefriger
+                  , offRefriger,automatRefriger,onTVirutas, offTVirutas,limpiezaProtec
+                  , vacioMenu1,vacioMenu2]
 
    mapM_ (\ bo -> set bo [visible :~ not]) paneles
    mapM_ (\ bo -> set bo [clientSize := sz 75 35]) paneles
 
    let menuPrincipal =  [ reposo, opeManual, ediPrograma, cargarSalvar, refTrabajo
-                    , pruebaPrograma, opeAutomatico, monitor, soporte]
+                        , pruebaPrograma, opeAutomatico, monitor, soporte]
 --   menuPrincipal <- variable [value := mp]
 
    let menuInferior = [ [onMando, seguridadPuerta, paraHusPrinc, operadorLibera, retrocedeCah]
-         , [jugHusHorario, jugHusAntiHora, manualRefriger, offRefriger, automatRefriger]
-         , [onTVirutas, offTVirutas, limpiezaProtec, vacioMenu, vacioMenu]]
+                      , [jugHusHorario, jugHusAntiHora, manualRefriger, offRefriger, automatRefriger]
+                      , [onTVirutas, offTVirutas, limpiezaProtec, vacioMenu1, vacioMenu2]]
 --   menuInferior <- variable [value := mi]
 
   ----------------------------------------------------------------------------- 
   -------------------- Botones de la Pantalla ---------------------------------
+--   [a,b,c,d,e,f,g] <- [ crearBoton pMain (xs:[]) 14 white | xs <- ['A'..'G']]
    a <- crearBoton pMain "A" 14 white
    b <- crearBoton pMain "B" 14 white
    c <- crearBoton pMain "C" 14 white
@@ -168,11 +171,10 @@ crearInterfaz fram pMain =
    mas   <- crearBoton pMain "+"    14 blue
    igual <- crearBoton pMain "="    14 blue
    shift <- crearBoton pMain "SHIFT" 8 yellow 
+   set shift [on command := mostrarMenu estado ambiente video textVideo alert menuPrincipal menuInferior ] -- Avilita el menu principal
    enter <- crearBoton pMain "ENTER" 8 blue
 --   set enter [on command := esRojo estado menuPrincipal]
-   let coment = [coma,cero,punto,mas,igual,shift,enter]
-   set shift [on command := mostrarMenu estado ambiente video textVideo alert menuPrincipal (head  menuInferior)] -- Avilita el menu principal
-                        
+   let coment = [coma,cero,punto,mas,igual,shift,enter] 
    ----------------------------------------------------------------------------
    f1 <- crearBoton pMain "F1" 14 white
    f2 <- crearBoton pMain "F2" 14 white
@@ -186,14 +188,23 @@ crearInterfaz fram pMain =
    let f1f9 = [f1,f2,f3,f4,f5,f6,f7,f8,f9]
    ----------------------------------------------------------------------------
    up   <- crearBoton pMain "^"    18 blue
+   set up [ on command := do mover estado ambiente "^" menuInferior
+                             mostrarMenu estado ambiente video textVideo alert menuPrincipal menuInferior
+                             repaint video]
    f10  <- crearBoton pMain "F10"  14 white
---   set f10 [ on command := do activar estado estados menuPrincipal onMando
- --                             repaint video]
+   set f10 [ on command := activar estado ambiente "f10" menuInferior ]
    f11  <- crearBoton pMain "F11"  14 white
+   set f11 [ on command := activar estado ambiente "f11" menuInferior ]
    f12  <- crearBoton pMain "F12"  14 white
+   set f12 [ on command := activar estado ambiente "f12" menuInferior ] 
    f13  <- crearBoton pMain "F13"  14 white
+   set f13 [ on command := activar estado ambiente "f13" menuInferior ] 
    f14  <- crearBoton pMain "F14"  14 white
+   set f14 [ on command := activar estado ambiente "f14" menuInferior ]  
    dow  <- crearBoton pMain "V"    14 blue
+   set dow [ on command := do mover estado ambiente "V" menuInferior
+                              mostrarMenu estado ambiente video textVideo alert menuPrincipal menuInferior
+                              repaint video]
    exit <- crearBoton pMain "EXIT" 14 yellow
    let upex = [up,f10,f11,f12,f13,f14,dow,exit]
    ----------------------------------------------------------------------------
@@ -298,7 +309,7 @@ cambiar s p te ca al bo =
      set te [ font      := fontFixed { _fontSize = 30 }
             , textColor := green
             , text      := ca]
-     set p [layout :=minsize ( sz 400 250) $ column 1 [ row 1 [hglue, hfill $ widget al, hglue
+     set p [layout := minsize ( sz 400 250) $ column 1 [ row 1 [hglue, hfill $ widget al, hglue
                                        ]
                               , row 1 [ fill $ widget te] ] 
           ]
@@ -307,28 +318,34 @@ cambiar s p te ca al bo =
 -- Funciona que se encarga de dibujar y dar funcionalidad a los menus del video
 -- de la fresadora.
 -- AGARRAR LOS CASOS EN LOS CUALES SE ENCUATRA LA FRESA PARA CAMBIAR LOS PANELES ojo
-mostrarMenu :: StatusField -> Ambiente -> Panel() -> Alerta -> Alerta -> [Button ()] -> [Button ()] -> IO()
-mostrarMenu s st p t al mp mi =
-  do ma <- get (getMenu st) value
+mostrarMenu :: StatusField -> Ambiente -> Panel() -> Alerta -> Alerta -> [Button ()] -> [[Button ()]] -> IO()
+mostrarMenu s am p t al mp m =
+  do valor <- get (getMenuInf am) value
+     [onm,sep,php,opl,rec] <- return $ [ xs | xs <- m !! (segundo valor)] -- hablar en la documentación 
+     let mi = m !! (segundo valor)
+
+     ----------- para activar los paneles del video
+     ma <- get (getMenu am) value
      case ma of
-      VacioM    -> do
-                     set s [text := "La fresa ya no esta en parada de emergencia"]
-                     set t [ bgcolor := grey
-                           , textColor := green
-                           , text := "IND.ROMI S/A\n REV 80-001 \n CNC MACH9" 
-                           ]
-                     varSet (getMenu st) Principal
-                     set al [text := "Servos Desconec."]
-                     mapM_ (\ bo -> set bo [visible :~ not]) mp
-                     mapM_ (\ bo -> set bo [visible :~ not]) mi
+      VacioM    -> do set s [ text := "La fresa ya no esta en parada de emergencia"]
+                      set t [ bgcolor := grey
+                            , textColor := green
+                            , text := "IND.ROMI S/A\n REV 80-001 \n CNC MACH9" 
+                            ]
+                      varSet (getMenu am) Principal
+                      set al [text := "Servos Desconec."]
+                      mapM_ (\ bo -> set bo [visible :~ not]) mp
+                      mapM_ (\ bo -> set bo [visible :~ not]) mi
       Principal -> do set al [text := "Servos Desconec."]
                       set t [ bgcolor := grey
                             , textColor := green
                             , text := "IND.ROMI S/A\n REV 80-001 \n CNC MACH9" 
                             ]
-                      varSet (getMenu st) VacioM
-                      set s [text := "Funciona!!!"]
-      _         -> do set s [text := "NOo funciona"]
+--                      varSet (getMenu st) VacioM
+                      mapM_ (\ bo -> set bo [visible :~ not]) (m !! (cuarto valor))
+                      mapM_ (\ bo -> set bo [visible :~ not]) mi
+--                      set s [text := "Funciona!!!"]
+      _         -> set s [text := "NOo funciona"]
 
      rep <- toIO (mp !! 0)
      opm <- toIO (mp !! 1)
@@ -339,13 +356,13 @@ mostrarMenu s st p t al mp mi =
      oau <- toIO (mp !! 6)
      mon <- toIO (mp !! 7)
      sop <- toIO (mp !! 8)
-
+{-
      onm <- toIO (mi !! 0)
      sep <- toIO (mi !! 1)
      php <- toIO (mi !! 2)
      opl <- toIO (mi !! 3)
      rec <- toIO (mi !! 4)
-
+-}
      set p [ layout := column 1 
                        [ row 1 [ column 1
                                  [ row 1 [ column 1 [ row 1 [fill $ widget al]
@@ -362,7 +379,7 @@ mostrarMenu s st p t al mp mi =
                                                      ,  widget mon
                                                      ]]
                                  , row 10 [ hglue, hglue
-                                         , hfill $ widget $ onm
+                                         , hfill $ widget onm
                                          , (hfill . widget) sep
                                          , (hfill . widget) php
                                          , (hfill . widget) opl
@@ -377,34 +394,6 @@ mostrarMenu s st p t al mp mi =
            ]
     -- set p [ layout :=  column 0 [ row 0 [ hfill $ widget a] ]]
      repaint p
-
--- Funcion que nos devuleve los menus predeterminados, sin que estos esten 
--- activos, eso quiere decir que no estan pintados
-menuPrin :: Panel () -> MenuPrincipal
-menuPrin p = MenuPrin { reposo          = crearBoton p "REPOSO"               8 black 
-                      , opeManual       = crearBoton p "OPERACION\nMANUAL"    8 black
-                      , ediPrograma     = crearBoton p "EDICION\nPROGRAMA"    8 black
-                      , cargarSalvar    = crearBoton p "GUARDAR /\nSALIR"     8 black
-                      , refTrabajo      = crearBoton p "REFER.\nTRABAJO"      8 black
-                      , pruebaPrograma  = crearBoton p "HACER PRUE\nBA PROGR" 8 black
-                      , opeAutomatico   = crearBoton p "OPERACION\nAUTOMANT." 8 black
-                      , monitor         = crearBoton p "MONITOR"              8 black
-                      , soporte         = crearBoton p "SOPORTE"              8 black
-                      , onMando         = crearBoton p "ON\nMANDO"            8 black
-                      , seguridadPuerta = crearBoton p "SEGURIDAD\nPUERTA"    8 black
-                      , paraHusPrinc    = crearBoton p "PARA HUS.\nPRINC."    8 black
-                      , operadorLibera  = crearBoton p "OPERADOR\nLIBERA"     8 black
-                      , retrocedeCah    = crearBoton p "RETROCEDE\nCAH"       8 black
-                      , jugHusHorario   = crearBoton p "JOG HUS.\nHORARIO"    8 black
-                      , jugHusAntiHora  = crearBoton p "JOG HUS.\nANTI-HOR"   8 black
-                      , manualRefriger  = crearBoton p "MANUAL\nREFRIGER"     8 black
-                      , offRefriger     = crearBoton p "OFF\nREFRIGER"        8 black
-                      , automatRefriger = crearBoton p "AUTOMAT.\nREGRIGER"   8 black
-                      , onTVirutas      = crearBoton p "ON\nT.VIRUTAS"        8 black
-                      , offTVirutas     = crearBoton p "OFF/RETR.\nT.VIRUTAS" 8 black
-                      , limpiezaProtec  = crearBoton p "LIMPIEZA\nPROTEC. "   8 black
-                      , vacioMenu       = crearBoton p ""                     1 black 
-                      }
 
 -- Funcion para crear Textos, renderizando algunas caracterizticas basicas que
 -- debe tener un texto por defecto.
@@ -425,49 +414,142 @@ crearBoton p t f c = button p [ clientSize := sz 45 40
                               , text       := t
                               , enabled    :~ not] 
 
-{-
-activar :: StatusField -> Ambiente -> Var MenuPrincipal -> Button () -> IO ()
-activar f am mp om = 
-  do case (getMenu am) of
-      VacioM -> do-- let a = (getCuerpoP (getCuerpoMenu am))
-                  -- o <- onMando =<< (get a value)
-                   set om [ bgcolor := red ] 
-                   set f [text := "Activo ON MANDO"]
-                   varSet mp (actualizarOnMando (toIO om) (get mp value))
-      _      -> set f [text := "preciono F10"]
-     return ()
+-- funcion para activar los botones del menu inferior
+activar :: StatusField -> Ambiente -> String -> [[Button ()]] -> IO ()
+activar st am co mi = 
+  do valor <- get (getMenuInf am) value
+     case segundo valor of
+      0 -> case co of
+            "f10" -> do fila <- return $ ( mi !! 0) !! 0
+                        set fila [ bgcolor := darkgrey ]
+                        set st [text := "Activo On Mando"]
+                        varSet (getMenuInf am) (OnMando,0,OnMando,cuarto valor)
+                        desactivar (tercero valor) mi
+            "f11" -> do fila <- return $ ( mi !! 0) !! 1
+                        set fila [ bgcolor := darkgrey ]
+                        set st [text := "Seguridad Puerta"]
+                        varSet (getMenuInf am) (SeguridadPuerta,0,SeguridadPuerta,cuarto valor)
+                        desactivar (tercero valor) mi
+            "f12" -> do fila <- return $ ( mi !! 0) !! 2
+                        set fila [ bgcolor := darkgrey ]
+                        set st [text := "Parada Hus Princ"]
+                        varSet (getMenuInf am) (ParaHusPrinc,0,ParaHusPrinc,cuarto valor)
+                        desactivar (tercero valor) mi
+            "f13" -> do fila <- return $ ( mi !! 0) !! 3
+                        set fila [ bgcolor := darkgrey ]
+                        set st [text := "Operador Libera"]
+                        varSet (getMenuInf am) (OperadorLibera,0,OperadorLibera,cuarto valor)
+                        desactivar (tercero valor) mi
+            "f14" -> do fila <- return $ ( mi !! 0) !! 4
+                        set fila [ bgcolor := darkgrey ]
+                        set st [text := "Retrocede Cah"]
+                        varSet (getMenuInf am) (RetrocedeCah,0,RetrocedeCah,cuarto valor)
+                        desactivar (tercero valor) mi
+            _     -> do set st [text := "NOOO"]
 
-esRojo :: StatusField -> Var MenuPrincipal -> IO ()
-esRojo s mp = do onc <- onMando =<< (get mp value)
-                 col <- get onc bgcolor
-                 case col of
-                  red -> set s [text := "SIiiii"]
-                  _    -> set s [text := "Npooo"]
--}
+      1 -> case co of
+            "f10" -> do fila <- return $ ( mi !! 1) !! 0
+                        set fila [ bgcolor := darkgrey ]
+                        set st [text := "Jug Hus Horario"]
+                        varSet (getMenuInf am) (JugHusHorario,1,JugHusHorario,cuarto valor)
+                        desactivar (tercero valor) mi
+            "f11" -> do fila <- return $ ( mi !! 1) !! 1
+                        set fila [ bgcolor := darkgrey ]
+                        set st [text := "Jug Hus Anti Horario"]
+                        varSet (getMenuInf am) (JugHusAntiHora,1,JugHusAntiHora,cuarto valor)
+                        desactivar (tercero valor) mi
+            "f12" -> do fila <- return $ ( mi !! 1) !! 2
+                        set fila [ bgcolor := darkgrey ]
+                        set st [text := "Manual Refriger"]
+                        varSet (getMenuInf am) (ManualRefriger,1,ManualRefriger,cuarto valor)
+                        desactivar (tercero valor) mi
+            "f13" -> do fila <- return $ ( mi !! 1) !! 3
+                        set fila [ bgcolor := darkgrey ]
+                        set st [text := "Off Refriger"]
+                        varSet (getMenuInf am) (OffRefriger,1,OffRefriger,cuarto valor)
+                        desactivar (tercero valor) mi
+            "f14" -> do fila <- return $ ( mi !! 1) !! 4
+                        set fila [ bgcolor := darkgrey ]
+                        set st [text := "Automatico Refriger"]
+                        varSet (getMenuInf am) (AutomatRefriger,1,AutomatRefriger,cuarto valor)
+                        desactivar (tercero valor) mi
+            _     -> do set st [text := "NOOO"]
 
-actualizarOnMando :: IO (Button ()) -> IO MenuPrincipal -> MenuPrincipal
-actualizarOnMando b mp = MenuPrin { reposo          = reposo         =<< mp 
-                                  , opeManual       = opeManual      =<< mp
-                                  , ediPrograma     = ediPrograma    =<< mp
-                                  , cargarSalvar    = cargarSalvar   =<< mp
-                                  , refTrabajo      = refTrabajo     =<< mp
-                                  , pruebaPrograma  = pruebaPrograma =<< mp
-                                  , opeAutomatico   = opeAutomatico  =<< mp
-                                  , monitor         = monitor        =<< mp
-                                  , soporte         = soporte        =<< mp
-                                  , onMando         = b
-                                  , seguridadPuerta = seguridadPuerta =<< mp
-                                  , paraHusPrinc    = paraHusPrinc    =<< mp
-                                  , operadorLibera  = operadorLibera  =<< mp
-                                  , retrocedeCah    = retrocedeCah    =<< mp
-                                  , jugHusHorario   = jugHusHorario   =<< mp
-                                  , jugHusAntiHora  = jugHusAntiHora  =<< mp
-                                  , manualRefriger  = manualRefriger  =<< mp
-                                  , offRefriger     = offRefriger     =<< mp 
-                                  , automatRefriger = automatRefriger =<< mp
-                                  , onTVirutas      = onTVirutas      =<< mp
-                                  , offTVirutas     = offTVirutas     =<< mp
-                                  , limpiezaProtec  = limpiezaProtec  =<< mp
-                                  , vacioMenu       = vacioMenu       =<< mp
-                                  }
+      2 -> case co of
+            "f10" -> do fila <- return $ ( mi !! 2) !! 0
+                        set fila [ bgcolor := darkgrey ]
+                        set st [text := "On T. Virutas"]
+                        varSet (getMenuInf am) (OnTVirutas,2,OnTVirutas,cuarto valor)
+                        desactivar (tercero valor) mi
+            "f11" -> do fila <- return $ ( mi !! 2) !! 1
+                        set fila [ bgcolor := darkgrey ]
+                        set st [text := "Off T. Virutas"]
+                        varSet (getMenuInf am) (OffTVirutas,2,OffTVirutas,cuarto valor)
+                        desactivar (tercero valor) mi
+            "f12" -> do fila <- return $ ( mi !! 2) !! 2
+                        set fila [ bgcolor := darkgrey ]
+                        set st [text := "Limpieza Protec"]
+                        varSet (getMenuInf am) (LimpiezaProtec,2,LimpiezaProtec,cuarto valor)
+                        desactivar (tercero valor) mi
+            "f13" -> do fila <- return $ ( mi !! 2) !! 3
+                        set st [text := "No tiene funcionalidad 1"]
+            "f14" -> do fila <- return $ ( mi !! 2) !! 4
+                        set st [text := "No tiene funcionalidad 2"]
+            _     -> do set st [text := "NOOO"]
+
+      _ -> do set st [text := "No esta activo"]
+
+-- funcion que desactiva los botones del menu inferior
+desactivar :: MenuInferior -> [[Button ()]] -> IO ()
+desactivar tmi mi = 
+  do case tmi of
+      OnMando         -> do bu <- return $ (mi !! 0) !! 0
+                            set bu [ bgcolor := black ]
+      SeguridadPuerta -> do bu <- return $ (mi !! 0) !! 1
+                            set bu [ bgcolor := black ]
+      ParaHusPrinc    -> do bu <- return $ (mi !! 0) !! 2
+                            set bu [ bgcolor := black ]
+      OperadorLibera  -> do bu <- return $ (mi !! 0) !! 3
+                            set bu [ bgcolor := black ]
+      RetrocedeCah    -> do bu <- return $ (mi !! 0) !! 4
+                            set bu [ bgcolor := black ]
+      JugHusHorario   -> do bu <- return $ (mi !! 1) !! 0
+                            set bu [ bgcolor := black ]
+      JugHusAntiHora  -> do bu <- return $ (mi !! 1) !! 1
+                            set bu [ bgcolor := black ]
+      ManualRefriger  -> do bu <- return $ (mi !! 1) !! 2
+                            set bu [ bgcolor := black ]
+      OffRefriger     -> do bu <- return $ (mi !! 1) !! 3
+                            set bu [ bgcolor := black ]
+      AutomatRefriger -> do bu <- return $ (mi !! 1) !! 4
+                            set bu [ bgcolor := black ]
+      OnTVirutas      -> do bu <- return $ (mi !! 2) !! 0
+                            set bu [ bgcolor := black ]
+      OffTVirutas     -> do bu <- return $ (mi !! 2) !! 1
+                            set bu [ bgcolor := black ]
+      LimpiezaProtec  -> do bu <- return $ (mi !! 2) !! 2
+                            set bu [ bgcolor := black ]
+      _               -> do bu <- return $ (mi !! 2) !! 4
+                            set bu [ bgcolor := black ]
+
+-- Funcion que nos permite mover los tres paneles que tiene el menu inferior
+mover :: StatusField -> Ambiente -> String -> [[Button ()]] -> IO ()
+mover st am co mi =
+  do valor <- get (getMenuInf am) value
+     case segundo valor of
+      0 -> case co of
+            "^" -> do varSet (getMenuInf am) (primero valor,1,tercero valor,0)
+                      set st [text := "Se movio al panel inferior 1"]
+            "V" -> do varSet (getMenuInf am) (primero valor,2,tercero valor,0)
+                      set st [text := "se movio al panel inferior 2"]
+      1 -> case co of
+            "^" -> do varSet (getMenuInf am) (primero valor,2,tercero valor,1)
+                      set st [text := "Se movio al panel inferior 2"]
+            "V" -> do varSet (getMenuInf am) (primero valor,0,tercero valor,1)
+                      set st [text := "Se movio al panel inferior 0"]
+      2 -> case co of
+            "^" -> do varSet (getMenuInf am) (primero valor,0,tercero valor,2)
+                      set st [text := "Se movio al panel inferior 0"]
+            "V" -> do varSet (getMenuInf am) (primero valor,1,tercero valor,2)
+                      set st [text := "Se movio al panel inferior 1"]
 
