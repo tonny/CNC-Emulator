@@ -5,8 +5,8 @@ type Posicion = Int
 type MemoriaInf = MenuInferior
 type MemoriaPos = Int
 
-type Ambiente = ( Var Menus --menu que esta pintado en el panel video
-                , Var [Menus] --memoria que guarda los paneles aneteriores
+type Ambiente = ( Var (Paneles,Bool) --menu que esta pintado en el panel video
+                , Var [Paneles] --memoria que guarda los paneles aneteriores
                 , Var (MenuInferior,Posicion,MemoriaInf,MemoriaPos)
                 , Var Bool -- parada de emergencia
                 , Var Bool  -- servos Activo
@@ -15,118 +15,74 @@ type Ambiente = ( Var Menus --menu que esta pintado en el panel video
 data Menus = Principal -- esta caso llama a al data Principal Menu
            | Operacion
            | MDI
-           | Edicion
-           | VacioM
+--           | VacioM
         deriving Eq
 
-data PrincipalMenu = Reposo
-                   | OpeManual
-                   | DirPrograma
-                   | Guradar
-                   | RefTrabajo
-                   | PruebaPrograma
-                   | OpeAutimatico
-                   | Monitor
-                   | Soporte
-                   | VacioMP
-            deriving Eq
-
 data MenuInferior =  OnMando
-                   | SeguridadPuerta
-                   | ParaHusPrinc
-                   | OperadorLibera
-                   | RetrocedeCah
-                   | JugHusHorario
-                   | JugHusAntiHora
-                   | ManualRefriger
-                   | OffRefriger
-                   | AutomatRefriger
-                   | OnTVirutas
-                   | OffTVirutas
-                   | LimpiezaProtec
-                   | VacioMI
+                  | SeguridadPuerta
+                  | ParaHusPrinc
+                  | OperadorLibera
+                  | RetrocedeCah
+                  | JugHusHorario
+                  | JugHusAntiHora
+                  | ManualRefriger
+                  | OffRefriger
+                  | AutomatRefriger
+                  | OnTVirutas
+                  | OffTVirutas
+                  | LimpiezaProtec
+                  | VacioMI
             deriving Eq
 
--- El data MenuPrincipal nos sirve para poder manejar todos los menus 
--- que se puede utilizar en la pantalla principal del fresador
--- Window a
-data MenuPrincipal = MenuPrin { reposo          :: IO (Button ())
-                              , opeManual       :: IO (Button ())
-                              , ediPrograma     :: IO (Button ())
-                              , cargarSalvar    :: IO (Button ())
-                              , refTrabajo      :: IO (Button ())
-                              , pruebaPrograma  :: IO (Button ())
-                              , opeAutomatico   :: IO (Button ())
-                              , monitor         :: IO (Button ())
-                              , soporte         :: IO (Button ())
-                              , onMando         :: IO (Button ())
-                              , seguridadPuerta :: IO (Button ())
-                              , paraHusPrinc    :: IO (Button ())
-                              , operadorLibera  :: IO (Button ())
-                              , retrocedeCah    :: IO (Button ())
-                              , jugHusHorario   :: IO (Button ())
-                              , jugHusAntiHora  :: IO (Button ())
-                              , manualRefriger  :: IO (Button ())
-                              , offRefriger     :: IO (Button ())
-                              , automatRefriger :: IO (Button ())
-                              , onTVirutas      :: IO (Button ())
-                              , offTVirutas     :: IO (Button ())
-                              , limpiezaProtec  :: IO (Button ())
-                              , vacioMenu       :: IO (Button ())
-                              }
+data Paneles =
+    Reposo         | OpeManual     | EdiPrograma   | CargarSalvar | RefTrabajo 
+  | PruebaPrograma | OpeAutomatico | Monitor       | Soporte
+   -- opManual
+  | Volante        | Continuo      | Incremental   | MedirManual  | Mdi          
+  | Vacio          | RefAlmacen    | Referencia    | RefMaquina
+  -- EdiPrograma
+  | Display        | Editar        | Instruir      | ProgNuevo    | ProxPrograma 
+  | RenumPrograma  | BorrarProgra  | BorrarTodos   | Direct
+  -- Salvar gurdar
+  | Salvar         | Verificar     | Cargar        | VacioC1      | VacioC2      
+  | VacioC3        | VacioC4       | SelDisSalvar  | SelDisCargar
+  --- RefTrabajo 
+  | Metrico        | Pulgada       | IgnoraBloque  | ParadaOpcio  | IniMedioProg 
+  | RefHerramien   | CorrecFija    | Status        | DirectRT
+  -- PruebaProgra 
+  | VarifRapido    | VerConAvance  | EjecutarSeco  | EjecutCeroZ  | VacioPru1      
+  | VacioPru2      | VacioPru3     | VacioPru4     | VacioPru5
+  -- OpeAutomatico
+  | ReferTrabajo   | Movimiento    | MdiOA         | MonitorOA    | Parametros 
+  | Edicion        | StatusOA      | Graficos      | DirectOA
+  --  Monitor
+  | ProximoGrupo   | RecargaHerr   | RecargaTotal  | Normal       | CargarM       
+  | SalvarM        | Cerrar        | Diagnosticar  | VacioM
+  -- Soporte  
+  | ProtegerProg   | VacioP1       | Diagnostico   | ControlAcce  | ParameAltMaq
+  | Pal            | VacioP2       | VacioP3       | Logon
+  -- Mdi   
+  | GraficosMdi    | VacioMdi1     | StatusMdi     | VacioMdi2    | DiagnosticoMdi  
+  | VacioMdi3      | CodigoG       | CodigoM       | DirectMdi
+  -- Display  
+  | GraficosD      | ListaD        | VacioD1       | Pesquisa     | VacioD2     
+  | VacioD3        | CodigoGD      | CodigoMD      | DirectD
+   -- Editar 
+  | GraficosE      | ListaE        | InserPrograma | PesquisaE    | VacioE1     
+  | VacioE2        | CodigoGE      | CodigoME      | DirectE
+  -- Instruir
+  | VolanteI       | ContinuoI     | IncrementalI  | VacioI1      | InstruirMan  
+  | InstruirMdi    | BorrarProg    | VacioI2       | DirectI
+  | Raiz -- para poner la cabezera
+  | VacioMenu
+   deriving (Show,Eq)
 
---data MenuInfierior = MenuInferior 
--- Datas de operaciones manuales que esta en el menu principal
-data OperacionMan = Volante
-                  | Continuo
-                  | Incremental
-                  | MedirManual
-                  | MDi
-                  | VacioOper
-                  | RefAlmacen
-                  | Referencia
-                  | RefMaquina
-                  | VacioOM
-                deriving Eq
 
-data OperacionManual = OperacionManual { volante     :: IO (Button ())
-                                       , continuo    :: IO (Button ())
-                                       , incremental :: IO (Button ())
-                                       , medirManual :: IO (Button ())
-                                       , mdi         :: IO (Button ())
-                                       , vacioOper   :: IO (Button ())
-                                       , refAlmacen  :: IO (Button ())
-                                       , referencia  :: IO (Button ())
-                                       , refMaquina  :: IO (Button ())
-                                       }
-
--- Datas para el MDI que esta en el menu de Operacion Manual
-data Mdi = Mdi { graficos    :: IO (Button ())
-               , vacioMdi    :: IO (Button ())
-               , status      :: IO (Button ())
-               , diagnostico :: IO (Button ())
-               , codigosG    :: IO (Button ())
-               , codigodM    :: IO (Button ())
-               , directMdi   :: IO (Button ())
-               }
-
--- Edicion Programa esta definido en el Menu Principal
-data EdicionPrograma = EdiPrograma { display     :: IO (Button ())
-                                   , editar      :: IO (Button ())
-                                   , instruir    :: IO (Button ())
-                                   , progrNuevo  :: IO (Button ())
-                                   , proxProg    :: IO (Button ())
-                                   , renumProg   :: IO (Button ())
-                                   , borrarProg  :: IO (Button ())
-                                   , borrarTodos :: IO (Button ())
-                                   , direct      :: IO (Button ())
-                                   }
-
-getMenu :: Ambiente -> Var Menus
+getMenu :: Ambiente -> Var (Paneles,Bool)
 getMenu (a,_,_,_,_) = a
 
-getMenus :: Ambiente -> Var [Menus]
-getMenus (_,a,_,_,_) = a
+getMemoria :: Ambiente -> Var [Paneles]
+getMemoria (_,a,_,_,_) = a
 
 getMenuInf :: Ambiente -> Var (MenuInferior,Posicion,MemoriaInf,MemoriaPos)
 getMenuInf (_,_,a,_,_) = a
