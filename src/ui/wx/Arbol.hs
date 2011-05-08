@@ -1,4 +1,9 @@
 module Arbol  where
+
+-- Autor    : Antonio Mamani Q.
+-- Proyecto : CNC-Emulador
+-- Version  : 0.1
+
 import Data.List
 import Datas
 import Graphics.UI.WX
@@ -22,6 +27,17 @@ getHijos (Bt x h@(y:ys))  []     a | a == fst x = ventanas h
 getHijos (Bt _ [])        (x:xs) a = getHijos x xs a
 getHijos (Bt b h@(x:res)) (y:ys) a | a == fst b = ventanas h
                                    | otherwise  = (getHijos x res a)++(getHijos y ys a) 
+
+-- Funcion que crear botones, renderizando algunas caracteristicas basicas que
+-- debe tener un bonton por defecto.
+crearB :: Panel () -> String -> IO (Button ())
+crearB p t = button p [ clientSize := sz 75 38
+                          , bgcolor    := black
+                          , font       := fontFixed { _fontSize = 8 }
+                          , text       := t
+                          , enabled    :~ not]
+--                          , visible    :~ not] 
+
 
 -- Funcion que maneja el arbol de paneles con sus respectivas ramas
 crearP :: Panel () -> Arbol (Paneles,String)
@@ -118,23 +134,23 @@ cargarSalvar p =
 refTrabajo :: Panel () -> Arbol (Paneles,String)
 refTrabajo p = 
   Bt (RefTrabajo,"REFER.\nTRABAJO")
-      [ Bt (Metrico     , "METRICO")               []
-      , Bt (Pulgada     , "PULGADA")               []
-      , Bt (IgnoraBloque, "IGNORA\nBLOQUE")        []
-      , Bt (ParadaOpcio , "PARADA\nOPCIONAL")      []
+      [ Bt (Metrico     , "METRICO"              ) []
+      , Bt (Pulgada     , "PULGADA"              ) []
+      , Bt (IgnoraBloque, "IGNORA\nBLOQUE"       ) []
+      , Bt (ParadaOpcio , "PARADA\nOPCIONAL"     ) []
       , Bt (IniMedioProg, "INICIO ME-\nDIO PROGR") []
-      , Bt (RefHerramien, "REFER. DE\nHERRAM.")    []
-      , Bt (CorrecFija  , "CORREC.\nFIJAC")        []
-      , Bt (Status      , "STATUS")                []
-      , Bt (DirectRT    , "DIRECT")                []
+      , Bt (RefHerramien, "REFER. DE\nHERRAM."   ) []
+      , Bt (CorrecFija  , "CORREC.\nFIJAC"       ) []
+      , Bt (Status      , "STATUS"               ) []
+      , Bt (DirectRT    , "DIRECT"               ) []
       ]
 pruebaPrograma :: Panel () -> Arbol (Paneles, String)
 pruebaPrograma p = 
   Bt (PruebaPrograma, "HACER PRU\nBA PROG") 
-      [ Bt (VarifRapido , "VERIF.\nRAPIDO")    []
+      [ Bt (VarifRapido , "VERIF.\nRAPIDO"   ) []
       , Bt (VerConAvance, "VERIF.\nCON VANCE") []
-      , Bt (EjecutarSeco, "EJECUTA\nSECO")     []
-      , Bt (EjecutCeroZ , "EJECUTA\nSECO Z")   []
+      , Bt (EjecutarSeco, "EJECUTA\nSECO"    ) []
+      , Bt (EjecutCeroZ , "EJECUTA\nSECO Z"  ) []
       , Bt (VacioPru1   , "  ") []
       , Bt (VacioPru2   , "  ") []
       , Bt (VacioPru3   , "  ") []
@@ -146,42 +162,42 @@ opeAutomatico :: Panel () -> Arbol (Paneles, String)
 opeAutomatico p =
   Bt (OpeAutomatico, "OPERACION\nAUTOMAT.")
       [ Bt (ReferTrabajo, "REFER.\nTRABAJO") []
-      , Bt (Movimiento  , "MOVIMIENTO")      []
-      , Bt (MdiOA       , "MDI")             []
-      , Bt (MonitorOA   , "MONITOR")         []
-      , Bt (Parametros  , "PARA-\nMETROS")   []
-      , Bt (Edicion     , "EDICION")         []
-      , Bt (StatusOA    , "STATUS")          []
-      , Bt (Graficos    , "GRAFICOS")        []
-      , Bt (DirectOA    , "DIRECT")          []
+      , Bt (Movimiento  , "MOVIMIENTO"     ) []
+      , Bt (MdiOA       , "MDI"            ) []
+      , Bt (MonitorOA   , "MONITOR"        ) []
+      , Bt (Parametros  , "PARA-\nMETROS"  ) []
+      , Bt (Edicion     , "EDICION"        ) []
+      , Bt (StatusOA    , "STATUS"         ) []
+      , Bt (Graficos    , "GRAFICOS"       ) []
+      , Bt (DirectOA    , "DIRECT"         ) []
       ]
 
 monitor :: Panel () -> Arbol (Paneles, String)
 monitor p = 
   Bt (Monitor, "MONITOR")
       [ Bt (ProximoGrupo, "PROXIMO\nGRUPO") []
-      , Bt (RecargaHerr,  "RECARGA\nHERR." ) []
+      , Bt (RecargaHerr , "RECARGA\nHERR.") []
       , Bt (RecargaTotal, "RECARGA\nTOTAL") []
-      , Bt (Normal, "NORMAL")       []
-      , Bt (CargarM, "CARGAR")      []
-      , Bt (SalvarM,  "SALVAR")      []
-      , Bt (Cerrar,  "CERRAR")       []
-      , Bt (Diagnosticar,  "DIAGNOST.") []
-      , Bt (VacioM,  "   ")      []
+      , Bt (Normal      , "NORMAL"        ) []
+      , Bt (CargarM     , "CARGAR"        ) []
+      , Bt (SalvarM     , "SALVAR"        ) []
+      , Bt (Cerrar      , "CERRAR"        ) []
+      , Bt (Diagnosticar, "DIAGNOST."     ) []
+      , Bt (VacioM      , "   "           ) []
       ]
 
 soporte :: Panel () -> Arbol (Paneles, String)
 soporte p =
   Bt (Soporte, "SOPORTE")
       [ Bt (ProtegerProg, "PROTEGER\nPROGRAMA") []
-      , Bt (VacioP1,  "   ")                     []
-      , Bt (Diagnostico,  "DIAGNOS-\nTICO")      []
-      , Bt (ControlAcce,  "CONTROL\nACCESO")     []
+      , Bt (VacioP1     ,  "   "              ) []
+      , Bt (Diagnostico ,  "DIAGNOS-\nTICO"   ) []
+      , Bt (ControlAcce ,  "CONTROL\nACCESO"  ) []
       , Bt (ParameAltMaq, "PARAMET.\nALT.MAQ.") []
-      , Bt (Pal, "PAL")          []
-      , Bt (VacioP2, "   ")      []
-      , Bt (VacioP3, "   ")      []
-      , Bt (Logon, "LOGON")      []
+      , Bt (Pal         , "PAL"               ) []
+      , Bt (VacioP2     , "   "               ) []
+      , Bt (VacioP3     , "   "               ) []
+      , Bt (Logon       , "LOGON"             ) []
       ]
 
 
@@ -366,13 +382,4 @@ soporte p =
       , Bt (Logon, crearB p "LOGON")      []
       ]
 -}
--- Funcion que crear botones, renderizando algunas caracteristicas basicas que
--- debe tener un bonton por defecto.
-crearB :: Panel () -> String -> IO (Button ())
-crearB p t = button p [ clientSize := sz 75 40
-                          , bgcolor    := black
-                          , font       := fontFixed { _fontSize = 8 }
-                          , text       := t
-                          , enabled    :~ not]
---                          , visible    :~ not] 
 

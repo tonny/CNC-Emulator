@@ -1,4 +1,9 @@
 module Datas where
+
+-- Autor    : Antonio Mamani Q.
+-- Proyecto : CNC-Emulador
+-- Version  : 0.1
+
 import Graphics.UI.WX
 
 type Posicion = Int
@@ -11,12 +16,6 @@ type Ambiente = ( Var (Paneles,Bool) --menu que esta pintado en el panel video
                 , Var Bool -- parada de emergencia
                 , Var Bool  -- servos Activo
                 )
-
-data Menus = Principal -- esta caso llama a al data Principal Menu
-           | Operacion
-           | MDI
---           | VacioM
-        deriving Eq
 
 data MenuInferior =  OnMando
                   | SeguridadPuerta
@@ -38,31 +37,31 @@ data Paneles =
     Reposo         | OpeManual     | EdiPrograma   | CargarSalvar | RefTrabajo 
   | PruebaPrograma | OpeAutomatico | Monitor       | Soporte
    -- opManual
-  | Volante        | Continuo      | Incremental   | MedirManual  | Mdi          
+  | Volante        | Continuo      | Incremental   | MedirManual  | Mdi  
   | Vacio          | RefAlmacen    | Referencia    | RefMaquina
   -- EdiPrograma
   | Display        | Editar        | Instruir      | ProgNuevo    | ProxPrograma 
   | RenumPrograma  | BorrarProgra  | BorrarTodos   | Direct
   -- Salvar gurdar
-  | Salvar         | Verificar     | Cargar        | VacioC1      | VacioC2      
+  | Salvar         | Verificar     | Cargar        | VacioC1      | VacioC2  
   | VacioC3        | VacioC4       | SelDisSalvar  | SelDisCargar
   --- RefTrabajo 
   | Metrico        | Pulgada       | IgnoraBloque  | ParadaOpcio  | IniMedioProg 
   | RefHerramien   | CorrecFija    | Status        | DirectRT
   -- PruebaProgra 
-  | VarifRapido    | VerConAvance  | EjecutarSeco  | EjecutCeroZ  | VacioPru1      
+  | VarifRapido    | VerConAvance  | EjecutarSeco  | EjecutCeroZ  | VacioPru1     
   | VacioPru2      | VacioPru3     | VacioPru4     | VacioPru5
   -- OpeAutomatico
   | ReferTrabajo   | Movimiento    | MdiOA         | MonitorOA    | Parametros 
   | Edicion        | StatusOA      | Graficos      | DirectOA
   --  Monitor
-  | ProximoGrupo   | RecargaHerr   | RecargaTotal  | Normal       | CargarM       
+  | ProximoGrupo   | RecargaHerr   | RecargaTotal  | Normal       | CargarM 
   | SalvarM        | Cerrar        | Diagnosticar  | VacioM
   -- Soporte  
   | ProtegerProg   | VacioP1       | Diagnostico   | ControlAcce  | ParameAltMaq
   | Pal            | VacioP2       | VacioP3       | Logon
   -- Mdi   
-  | GraficosMdi    | VacioMdi1     | StatusMdi     | VacioMdi2    | DiagnosticoMdi  
+  | GraficosMdi    | VacioMdi1     | StatusMdi     | VacioMdi2    | DiagnosticoMdi 
   | VacioMdi3      | CodigoG       | CodigoM       | DirectMdi
   -- Display  
   | GraficosD      | ListaD        | VacioD1       | Pesquisa     | VacioD2     
@@ -71,12 +70,11 @@ data Paneles =
   | GraficosE      | ListaE        | InserPrograma | PesquisaE    | VacioE1     
   | VacioE2        | CodigoGE      | CodigoME      | DirectE
   -- Instruir
-  | VolanteI       | ContinuoI     | IncrementalI  | VacioI1      | InstruirMan  
+  | VolanteI       | ContinuoI     | IncrementalI  | VacioI1      | InstruirMan 
   | InstruirMdi    | BorrarProg    | VacioI2       | DirectI
   | Raiz -- para poner la cabezera
   | VacioMenu
    deriving (Show,Eq)
-
 
 getMenu :: Ambiente -> Var (Paneles,Bool)
 getMenu (a,_,_,_,_) = a
