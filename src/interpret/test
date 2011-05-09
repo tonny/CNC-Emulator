@@ -1,38 +1,38 @@
 ;holaaaaaaa como esta
 
-G70 N2123
-G71           ;N34 
-G90 X23  ;Probar todos los casos G12
-G91 A-12 R21 I12 V2 X12 B-34 A89 ;Probar con abcijknruvwxyz
-G91 ;El libro dice que se puede editar a x,y,z pero en la gramatica no
-G92 ;Hay que averiguar mas
-G94 F12 C-54 N122;Averiguar en que afecta C y F
-G99 A12 Y79 F22;falta para A..Z
-G74
-G01 X12 A21
-G73 I90 B43 I-12
-G02 D3
-G01 N21 R12 E910 X01
-G00 T2
-G74 X32 A33 I32
-G17 
-G18 N-12
-G40 X-12 N54
-G70 N653
-G19
-G45 N54 P2 O00
-G81 F123 V12 X21
-G83 I14 U90 F90
-G84
-G22 N34
-G23 X12 J54
+N002 G70 N2123#
+;N001 G71#           ;N34 
+;N003 G90 X23#  ;Probar todos los casos G12
+;N002 G91 A-12 R21 I12 V2 X12 B-34 A89# ;Probar con abcijknruvwxyz
+;N004 G91#;El libro dice que se puede editar a x,y,z pero en la gramatica no
+;N005 G92# ;Hay que averiguar mas
+;N006 G94 F12 C-54# ;Averiguar en que afecta C y F
+;N008 G99 F12 C21 N21 #;falta para A..Z
+;N009 G74#
+;N010 G01 X12 A21#
+;N001 G73 I90 B43 I-12#
+;N001 G02 D3#
+;N123 G01 N21 R12 E910 X01#
+;N123 G00 T2#
+;N123 G74 X32 A33 I32#
+;N123 G17 #
+;N232 G18 N-12#
+;N423 G40 X-12 N54#
+;N432 G70 N653#
+;N432 G19#
+;N541 G45 N54 P2 O00#
+;N123 G81 F123 V12 X21#
+;N124 G83 I14 U90 F90#
+;N532 G84#
+;N531 G22 N34#
+;N143 G23 X12 J54#
 
-G30 N2
-G29 L43
-G89 N23
-G24 E23 X12 J87
-G25 E23 X12 J87
-G26 
-G72 L-23
-G79 L-23
-G75 X-90
+;N433 G30 N2#
+;N312 G29 L43#
+;N124 G89 N23#
+;N431 G24 E23 X12 J87#
+;N431 G25 E23 X12 J87#
+;N123 G26 #
+;N433 G72 L-23#
+;N123 G79 L-23#
+;N582 G75 X-90.#

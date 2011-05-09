@@ -10,12 +10,12 @@ pCodigoCnc = Cnc <$> pList pCnc
 --                          Funciones G de Movimientos 
 -- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-pCnc =  Cordenadas  <$> pControlCordenadas
-    <|> Posiciones  <$> pPosicionamiento
-    <|> ModoEjes    <$> pModoEjes
-    <|> CiclosFijos <$> pCiclosFijos
-    <|> AutoRutinas <$> pAutoRutina
-    <|> Funciones   <$> pFunciones
+pCnc =  Cordenadas  <$> pN <*> pControlCordenadas <* pEndBlock "#"
+    <|> Posiciones  <$> pN <*> pPosicionamiento   <* pEndBlock "#"
+    <|> ModoEjes    <$> pN <*> pModoEjes          <* pEndBlock "#"
+    <|> CiclosFijos <$> pN <*> pCiclosFijos       <* pEndBlock "#"
+    <|> AutoRutinas <$> pN <*> pAutoRutina        <* pEndBlock "#"
+    <|> Funciones   <$> pN <*> pFunciones         <* pEndBlock "#"
 
 -- ===============================================================================
 --                           1. CONTROL DE CORDENADAS
@@ -52,7 +52,7 @@ pBodyTipoCordenada =  Angulos        <$> pAngulo
                   <|> CordR          <$> pR
 
 -- ================= Referencia para el eje rotacional ===========================
-
+-- OJO puede haver mas de C, N F
 pAvanceEjeRota = AvanceEjeRotacionalG94 <$ pKeyword "G94" <*> pList pBodyAvanceEje
 
 pBodyAvanceEje =  AvanceEjeNs <$  pKeyword "N" <*> pNumero -- pNSecuencia OJO-->> Corregir 
@@ -427,6 +427,10 @@ pT = T <$ pKeyword "T" <*> pNumero
 pR = R <$ pKeyword "R" <*> pNumero
 
 -- ===============================================================================
+
+--pEndBlock = EndB <$ pKeyword "#"
+
+-- ===============================================================================
 --                       Union Scanner con el Parser
 -- ===============================================================================
 
@@ -451,5 +455,9 @@ tSym :: Tipo -> String -> Parser Simbolo String
 tSym tok str = obtenerValor <$> pSym (Simbolo tok str 0 0)
 
 pKeyword k = tSym Keyword k
-pNumero   = (\ x ->(read x)::Float) <$> tSym Numero ""
+pEndBlock k = tSym EndBlock k
+pNumero   = (\ x ->(read (addCero x))::Float) <$> tSym Numero ""
+
+addCero x | last x == '.' = x++"0"
+          | otherwise = x
 

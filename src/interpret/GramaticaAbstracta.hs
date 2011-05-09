@@ -14,12 +14,12 @@ Funcion G70 Sistema de Unidad Pulgada
 Funcion G71 Sistema de Unidad Milimetrico
 -}
 
-data Cnc = Cordenadas  ControlCordenadas
-         | Posiciones  Posicionamiento
-         | ModoEjes    ModoEjes
-         | CiclosFijos CiclosFijos
-         | AutoRutinas AutoRutina
-         | Funciones   Funciones
+data Cnc = Cordenadas  N ControlCordenadas -- EndBlock
+         | Posiciones  N Posicionamiento   -- EndBlock
+         | ModoEjes    N ModoEjes          -- EndBlock
+         | CiclosFijos N CiclosFijos       -- EndBlock
+         | AutoRutinas N AutoRutina        -- EndBlock
+         | Funciones   N Funciones         -- EndBlock
    deriving Show
 
 data ControlCordenadas = Formato Formatos NSecuencia
@@ -484,5 +484,5 @@ data T = T Nume
 data R = R Nume
   deriving Show
 
-
 -- ===============================================================================
+
