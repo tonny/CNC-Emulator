@@ -1,0 +1,4 @@
+N00001 G00#;esto es un comentario
+N00001 G90#;Mode de programación en absoluto
+N00002 G00 X0. Y0. Z5.01#;posicionamiento
+

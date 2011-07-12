@@ -1,0 +1,38 @@
+	Wed Jun  8 16:19 2011 Time and Allocation Profiling Report  (Final)
+
+	   Scanner +RTS -hc -p -K100M -RTS
+
+	total time  =       23.46 secs   (1173 ticks @ 20 ms)
+	total alloc = 8,444,007,400 bytes  (excludes profiling overheads)
+
+COST CENTRE                    MODULE               %time %alloc
+
+main                           Main                  54.7   27.9
+scan                           Scanner               18.8   16.8
+show_aod                       Scanner               14.2   24.1
+CAF                            Scanner                7.3   18.1
+show_anP                       Scanner                5.0   13.1
+
+
+                                                                                               individual    inherited
+COST CENTRE              MODULE                                               no.    entries  %time %alloc   %time %alloc
+
+MAIN                     MAIN                                                   1           0   0.0    0.0   100.0  100.0
+ CAF                     Main                                                 210           3   0.0    0.0    73.5   44.7
+  main                   Main                                                 216           1  54.7   27.9    73.5   44.7
+   scanner               Scanner                                              218           1   0.0    0.0    18.8   16.8
+    scan                 Scanner                                              219     1284423  18.8   16.8    18.8   16.8
+ CAF                     Data.Typeable                                        208           1   0.0    0.0     0.0    0.0
+ CAF                     GHC.IO.Exception                                     202           3   0.0    0.0     0.0    0.0
+ CAF                     GHC.IO.Handle.FD                                     148           2   0.0    0.0     0.0    0.0
+ CAF                     System.Posix.Internals                               147           5   0.0    0.0     0.0    0.0
+  main                   Main                                                 217           0   0.0    0.0     0.0    0.0
+ CAF                     GHC.IO.FD                                            132           3   0.0    0.0     0.0    0.0
+  main                   Main                                                 223           0   0.0    0.0     0.0    0.0
+ CAF                     GHC.Conc                                             131           1   0.0    0.0     0.0    0.0
+ CAF                     GHC.IO.Handle.Internals                              122           1   0.0    0.0     0.0    0.0
+ CAF                     GHC.IO.Encoding.Iconv                                116           6   0.0    0.0     0.0    0.0
+  main                   Main                                                 220           0   0.0    0.0     0.0    0.0
+ CAF                     Scanner                                              113           4   7.3   18.1    26.5   55.3
+  show_aod               Scanner                                              221      796566  14.2   24.1    19.2   37.2
+   show_anP              Scanner                                              222      796566   5.0   13.1     5.0   13.1

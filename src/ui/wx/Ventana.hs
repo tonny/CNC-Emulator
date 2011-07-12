@@ -6,6 +6,7 @@ module Ventana where
 
 import Graphics.UI.WX
 import Graphics.UI.WXCore
+import System.Directory
 import Mensajes
 import Datas 
 import Arbol
@@ -26,12 +27,15 @@ crearInterfaz fram pMain =
 
    alert     <- crearText video alerta black 20 400 200
    textVideo <- textCtrlRich video [ clientSize := sz 400 300
-                                   , bgcolor    := grey 
+                                   , bgcolor    := black
                                    , textColor  := green
-                                   , font       := fontFixed { _fontSize = 30 }
+                                   , textBgcolor:= red
+                                   , font       := fontFixed { _fontSize = 16 }
                                    , text       := "Fresa Apagada"
                                    ]
-
+   --------------------- Direccion del directorio -------------------------------
+   carpeta <- getCurrentDirectory
+   ls <- getDirectoryContents "./../../../cnc"
    --------------------- Barra de estador ---------------------------------------
    estado           <- statusField [text  := "Maquina Pagada"]
    menuActual       <- variable    [value := (Raiz,False)]
@@ -39,8 +43,10 @@ crearInterfaz fram pMain =
    menuInf          <- variable    [value := (VacioMI,0,VacioMI,0)]
    paradaEmergencia <- variable    [value := False]
    servos           <- variable    [value := False]
+   programa         <- variable    [value := (0,head ls)]
+   memProg          <- variable    [value := filter (\x -> not $ elem x [".",".."]) ls]
    ---------------- Ambiente que se maneja los estados del simulador -------------
-   ambiente         <- return $ (menuActual,menus,menuInf,paradaEmergencia,servos)
+   ambiente         <- return $ (menuActual,menus,menuInf,paradaEmergencia,servos,programa,memProg)
    ------------------------ crear el arbol de paneles ----------------------------
    panelDer         <- return $ crearP video 
    ---------------creación de botones para los paneles video ---------------------
@@ -48,16 +54,16 @@ crearInterfaz fram pMain =
              , "JOG HUS.\nHORARIO","JOG HUS.\nANTI-HOR"  ,"MANUAL\nREFRIGER" ,"OFF\nREFRIGER"   ,"AUTOMAT.\nREGRIGER" 
              , "ON\nT.VIRUTAS"    ,"OFF/RETR.\nT.VIRUTAS","LIMPIEZA\nPROTEC.","      "          ,"   "
              ] 
-   paneles@[ onMando       ,seguridadPuerta,paraHusPrinc,operadorLibera ,retrocedeCah,jugHusHorario
-           , jugHusAntiHora,manualRefriger ,offRefriger ,automatRefriger,onTVirutas  ,offTVirutas 
-           , limpiezaProtec,vacioMenu1     , vacioMenu2
+   paneles@[ onMando      , seguridadPuerta, paraHusPrinc  , operadorLibera, retrocedeCah
+           , jugHusHorario, jugHusAntiHora , manualRefriger, offRefriger   , automatRefriger
+           , onTVirutas   , offTVirutas    , limpiezaProtec, vacioMenu1    , vacioMenu2
            ] :: [Button ()] <- mapM (\l -> crearB video l) pan
  
    mapM_ (\ bo -> set bo [visible :~ not]) paneles
 
-   let menuInferior = [ [onMando, seguridadPuerta, paraHusPrinc, operadorLibera, retrocedeCah]
-                      , [jugHusHorario, jugHusAntiHora, manualRefriger, offRefriger, automatRefriger]
-                      , [onTVirutas, offTVirutas, limpiezaProtec, vacioMenu1, vacioMenu2]]
+   let menuInferior = [ [onMando      , seguridadPuerta, paraHusPrinc  , operadorLibera, retrocedeCah]
+                      , [jugHusHorario, jugHusAntiHora , manualRefriger, offRefriger   , automatRefriger]
+                      , [onTVirutas   , offTVirutas    , limpiezaProtec, vacioMenu1    , vacioMenu2]]
 
   ----------------------------------------------------------------------------- 
   -------------------- Botones de la Pantalla ---------------------------------
@@ -111,17 +117,24 @@ crearInterfaz fram pMain =
    ----------------------------------------------------------------------------
    let f19 = zipWith (\a b -> a:b:[]) (repeat 'F') ['1'..'9']
    f1f9@[f1,f2,f3,f4,f5,f6,f7,f8,f9] :: [Button()] <- mapM (\l -> crearBoton pMain l 14 white) f19
+  
+   set f1 [ on command := do moverPanel estado "f1" ambiente panelDer
+                             ma <- get (getMenu ambiente) value
+                             case fst ma of
+                              Reposo -> do varSet (getMenu ambiente) (Reposo,True)
+                                           mostrarMenu estado ambiente video textVideo alert panelDer menuInferior
+                              _      -> mostrarMenu estado ambiente video textVideo alert panelDer menuInferior 
+          ]
 
    set f2 [ on command := do moverPanel estado "f2" ambiente  panelDer
                              mostrarMenu estado ambiente video textVideo alert panelDer menuInferior]
-
    set f3 [ on command := do moverPanel estado "f3" ambiente  panelDer
                              mostrarMenu estado ambiente video textVideo alert panelDer menuInferior]
-
    set f4 [ on command := do moverPanel estado "f4" ambiente  panelDer
                              mostrarMenu estado ambiente video textVideo alert panelDer menuInferior]
-
    set f5 [ on command := do moverPanel estado "f5" ambiente  panelDer
+                             mostrarMenu estado ambiente video textVideo alert panelDer menuInferior]
+   set f9 [ on command := do moverPanel estado "f9" ambiente  panelDer
                              mostrarMenu estado ambiente video textVideo alert panelDer menuInferior]
 
    ----------------------------------------------------------------------------
@@ -133,27 +146,33 @@ crearInterfaz fram pMain =
 
    set up [ on command := do mover estado ambiente "^" menuInferior
                              mostrarMenu estado ambiente video textVideo alert panelDer menuInferior]
-
    set f10 [ on command := activar estado ambiente "f10" menuInferior ]
-
    set f11 [ on command := activar estado ambiente "f11" menuInferior ]
-
    set f12 [ on command := activar estado ambiente "f12" menuInferior ] 
-
    set f13 [ on command := activar estado ambiente "f13" menuInferior ]
-
    set f14 [ on command := activar estado ambiente "f14" menuInferior ]
-
    set dow [ on command := do mover estado ambiente "V" menuInferior
                               mostrarMenu estado ambiente video textVideo alert panelDer menuInferior]
-
-   set exit [ on command := do moverPanel estado "exit" ambiente  panelDer
-                               mostrarMenu estado ambiente video textVideo alert panelDer menuInferior]
-
+   
+   set exit [ enabled    :~ not 
+            , on command := do isT <- (get( getMenu ambiente ) value)
+                               memo <-  get (getMemoria ambiente) value
+                               if snd isT && (fst isT /= Raiz)
+                                then do moverPanel estado "exit" ambiente  panelDer
+                                        mostrarMenu estado ambiente video textVideo alert panelDer menuInferior
+                                        mapM_ (putStrLn . show) memo
+                                        putStrLn "aqui true"
+                                else do cambiar estado ambiente (f1f9 ++ init upex) menuInferior
+                                        mapM_ (putStrLn . show) memo
+                                        putStrLn "Aqui falso"
+                                        moverPanel estado "exit" ambiente  panelDer
+                                        mostrarMenu estado ambiente video textVideo alert panelDer menuInferior
+            ]
+--   mapM_ (\l -> set l [enabled :~ not]) (f1f9 ++ init upex)
    ----------------------------------------------------------------------------
    etiqueta <- staticText pMain [ text    := "\\\n/\\ ROMI  MACH 9"
                                 , bgcolor := white
-                                , font    := fontFixed { _fontSize = 16 }]
+                                , font    := fontFixed { _fontSize = 14 }]
 
    stop <- crearBoton pMain "CYCLE\nSTOP" 8 red
    set stop [ clientSize := sz 60 60 ]
@@ -168,12 +187,12 @@ crearInterfaz fram pMain =
                 coment ++ f1f9 ++ upex ++ [arriba,stop,blk,start]
    ----------------------------------------------------------------------------
 --   pEmergencia1 <- panel pMain [ bgcolor := red, clientSize := sz 100 100]
-   pEmergencia1 <- button pMain [ bgcolor := red, clientSize := sz 100 100
-                                , on command := cambiar estado video textVideo inicio alert matriz]
+   pEmergencia1 <- button pMain [ bgcolor := red, clientSize := sz 100 100]
+--                                , on command := cambiar estado video textVideo inicio alert matriz]
 
    pEmergencia2 <- panel pMain [ bgcolor := darkgrey, clientSize := sz 100 100]
-   pSelector1 <- panel pMain [ bgcolor := white, clientSize := sz 100 100]
-   pSelector2 <- panel pMain [ bgcolor := blue, clientSize := sz 100 100]
+   pSelector1   <- panel pMain [ bgcolor := white, clientSize := sz 100 100]
+   pSelector2   <- panel pMain [ bgcolor := blue, clientSize := sz 100 100]
 
    ---------------------- Definiendo propiedades --------------------------------
    ------------------------------------------------------------------------------
@@ -239,6 +258,7 @@ crearInterfaz fram pMain =
             , clientSize := sz 1100 760
             ]
    repaint f
+{-
 ----------------------------------------------------------------------------
 -- funciona que activa y desactiva la funcionalidad del teclado de la pantalla
 -- y a la vez mustra las alertas por pantalla.
@@ -255,21 +275,30 @@ cambiar s p te ca al bo =
                               , row 1 [ fill $ widget te] ] 
           ]
 --                 textCtrlSetValue t c
+-}
+
+cambiar :: StatusField -> Ambiente -> [Button ()] -> [[Button ()]] -> IO()
+cambiar at am bu m =
+  do ma <- get (getMenu am) value
+     valor <- get (getMenuInf am) value
+     let mi = m !! (segundo valor)
+     if not (snd ma)
+      then do set at [text := "Botones del F1 al F14"] 
+              varSet (getMenu am) (Raiz,True)
+              mapM_ (\l -> set l [enabled :~ not]) bu
+              mapM_ (\b -> set b [visible :~ not]) mi
+      else return () -- mapM_ (\l -> set l [enabled :~ not]) bu
 
 -- Funciona que se encarga de dibujar y dar funcionalidad a los menus del video
 -- de la fresadora.
 -- AGARRAR LOS CASOS EN LOS CUALES SE ENCUATRA LA FRESA PARA CAMBIAR LOS PANELES ojo
 mostrarMenu :: StatusField -> Ambiente -> Panel() -> Alerta -> Alerta -> PanelDer -> [[Button ()]] -> IO()
 mostrarMenu s am p t al pd m =
-  do valor <- get (getMenuInf am) value
-     -- obtiene los botones que se pintaran en el menu inferior
-     [onm,sep,php,opl,rec] <- return $ [ xs | xs <- m !! (segundo valor)] -- hablar en la documentación 
+  do valor  <- get (getMenuInf am) value
      let mi = m !! (segundo valor)
-
+     prog <- get (getMemProg am ) value
      ----------- para activar los paneles del video
      ma <- get (getMenu am) value
-     let mp = map snd ( getHijos pd [] (fst ma))
---     [rep,opm,edp,cas,ref,prp,oau,mon,sop] <- return $ [ crearB p xs | xs <- mp]
      pe <- get (getParadaEmer am) value
      case fst ma of
       Raiz         -> do if pe
@@ -277,55 +306,95 @@ mostrarMenu s am p t al pd m =
                           else set al [text := "Parada de Emergencia"]
                          set t [ bgcolor := grey
                                , textColor := green
-                               , text := "IND.ROMI S/A\n REV 80-001 \n CNC MACH9" 
+                               , text := "IND.ROMI S/A\n REV 80-001 \n CNC MACH9"
+ --                              , visible :~ not
                                ]
                          if snd ma 
-                          then return() 
-                          else do mapM_ (\ bo -> set bo [visible :~ not]) mi  
+                          then mapM_ (\ bo -> set bo [visible :~ (\x -> if x then x else True)]) mi 
+                          else do mapM_ (\ bo -> set bo [visible :~ (\x -> if x then x else True)]) mi  
                                   varSet (getMenu am) (Raiz,True)
 
-      OpeManual    -> do set al [text := "OPERACION MANUAL"]
+      OpeManual    -> do set al [text := "OPERACION MANUAL MOV."]
+                         set t [ bgcolor := black
+                               , textColor := green
+                               , text := "PARADA DE EMERGENCIA" 
+                               ] 
                          varSet (getMenu am) (OpeManual,True)
 
       RefTrabajo   -> do set al [text := "REFERENCIA TRABAJO"]
+             --            set t  [visible :~ (\x -> if x then x else True)]
                          varSet (getMenu am) (RefTrabajo,True)
 
       Mdi          -> do set al [text := "MDI"]
                          varSet (getMenu am) (Mdi,True)
  
       EdiPrograma  -> do set al [text := "EDICION PROGRAMA"]
+                         set t [ visible :~ (\x -> if x then x else True)
+                               , bgcolor := black
+                               , textColor := green
+                               , text := unlines ["PARADA DE EMERGENCIA"," *EXTERNO* "
+                                                 ,">Programa     0"," Ident"
+                                                 ," Tam.         0","Disponible 56118"]
+                               ]
                          varSet (getMenu am) (EdiPrograma,True)
-
+      ProgNuevo    -> do set t [text := unlines ["PARADA DE EMERGENCIA"," *PROG NUEVO*"
+                                                ,">Programa     "++ (show $ (length prog)+1)," Ident"
+                                                ," Tam.         0","Disponible 56118"] 
+                               ]
+                         varSet (getMenu am) (EdiPrograma,True)
       CargarSalvar -> do set al [text := "CARGAR SALVAR"]
                          varSet (getMenu am) (CargarSalvar,True)
 
-      _         -> set s [text := "NOo funciona"]
- 
-     rep <- crearB p (mp !! 0)
-     opm <- crearB p (mp !! 1)
-     edp <- crearB p (mp !! 2)
-     cas <- crearB p (mp !! 3)
-     ref <- crearB p (mp !! 4)
-     prp <- crearB p (mp !! 5)
-     oau <- crearB p (mp !! 6)
-     mon <- crearB p (mp !! 7)
-     sop <- crearB p (mp !! 8)
+      _            -> set s [text := "NOo funciona"]
 
+     -- obtiene los botones que se pintaran en el menu inferior
+     let mp = map snd ( getHijos pd [] (fst ma)) 
+     memor <- get (getMemoria am) value
+     let md = if mp == [] then map snd (getHijos pd [] (last memor))
+                          else mp
+     --let (md,mii)  = if mp == [] then (replicate 9 " ",mi) else (mp,mi)
+
+     d@[rep,opm,edp,cas,ref,prp,oau,mon,sop] :: [Button ()] <- mapM (\l -> crearB p l ) md
+     i@[onm,sep,php,opl,rec] <- return $ [ xs | xs <- mi] -- hablar en la documentación
+--     set t  [visible :~ (\x -> if x then x else True)]
+--     set al [visible :~ (\x -> if x then x else True)]
+
+     if mp == [] then
+      case fst ma of
+       Reposo    -> do set t  [visible :~ not]
+                       set al [text := "Control en reposo"]
+                       set s  [text := "Control en reposo"]
+                       mapM_ (\v -> set v [visible :~ not]) i
+       ProgNuevo -> do set s  [text := "Programa Nuevo."]
+                       varSet (getMenu am) (EdiPrograma,True)
+       Continuo  -> do set al [text := "Continuo no Implementado"]
+                       set s  [text := "Aun no esta Implementado"]
+       Direct    -> do set t  [visible :~ (\x -> if x then False else False)]
+                        
+                       set al [text := unlines prog]
+                       set s [text := "Directorio de programas"]
+                       varSet (getMenu am) (Direct,True)
+       _         -> do-- set t  [visible :~ not]
+                       set al [text := "No se implemento este comando"]
+                       set s  [text := "No se implemento este comando."]
+                       varSet (getMenu am) ( last memor, True)
+                      -- mapM_ (\v -> set v [visible :~ not]) i
+      else return () 
+          
      set p [ layout := column 1 
                        [ row 1 [ column 1
                                  [ row 1 [ column 1 [ row 1 [fill $ widget al]
---                                                     , vglue
-                                                     , row 1 [ fill $ widget t] 
-                                                     ]
+                                                    , row 1 [ fill $ widget t] 
+                                                    ]
                                           , column 11 [  widget rep
-                                                     ,  widget opm
-                                                     ,  widget edp
-                                                     ,  widget cas
-                                                     ,  widget ref
-                                                     ,  widget prp
-                                                     ,  widget oau
-                                                     ,  widget mon
-                                                     ]]
+                                                      ,  widget opm
+                                                      ,  widget edp
+                                                      ,  widget cas
+                                                      ,  widget ref
+                                                      ,  widget prp
+                                                      ,  widget oau
+                                                      ,  widget mon
+                                                      ]]
                                  , row 10 [ hglue, hglue
                                          , hfill $ widget onm
                                          , (hfill . widget) sep
@@ -342,6 +411,9 @@ mostrarMenu s am p t al pd m =
            ]
     -- set p [ layout :=  column 0 [ row 0 [ hfill $ widget a] ]]
      repaint p 
+
+--activarMenu :: StatusField -> Ambiente -> Panel() -> Alerta -> Alerta -> PanelDer -> [[Button ()]] -> IO()
+
 
 -- Funcion para crear Textos, renderizando algunas caracterizticas basicas que
 -- debe tener un texto por defecto.
@@ -507,8 +579,7 @@ mover st am co mi =
             "V" -> do varSet (getMenuInf am) (primero valor,1,tercero valor,2)
                       set st [text := "Se movio al panel inferior 1"]
                       mapM_ (\ bo -> set bo [visible :~ not]) (mi !! 1)
-
-          
+ 
       -- mapM_ (\ bo -> set bo [visible :~ not]) (mi !! (cuarto valor))
       -- else do mapM_ (\ bo -> set bo [visible :~ not]) (mi !! (segundo valor))
   
@@ -519,17 +590,31 @@ moverPanel sf st am md =
  do menup <- get (getMenu am) value
     memor <- get (getMemoria am) value
     let hijos = getHijos md [] (fst menup)
-    case st of
-     "f2"   -> do varSet (getMenu am) (fst (hijos!!1), False)
-                  varSet (getMemoria am) (memor ++ [ fst menup ])
-     "f3"   -> do varSet (getMenu am) (fst (hijos!!2), False)
-                  varSet (getMemoria am) (memor ++ [ fst menup ])
-     "f4"   -> do varSet (getMenu am) (fst (hijos!!3), False)
-                  varSet (getMemoria am) (memor ++ [ fst menup ])
-     "f5"   -> do varSet (getMenu am) (fst (hijos!!4), False)
-                  varSet (getMemoria am) (memor ++ [ fst menup ]) 
-     "exit" -> if length memor == 1 
-                then do varSet (getMenu am) (Raiz, True)
-                        varSet (getMemoria am) memor
-                else do varSet (getMenu am) ( last $ init memor, True)
-                        varSet (getMemoria am) (init memor)
+    if hijos == [] && st /= "exit"
+     then varSet (getMenu am) ( fst menup, False)
+--          varSet (getMemoria am) ()
+     else if elem (fst menup) (tail memor) && st /= "exit"
+          then do mapM_ (putStrLn . show) memor
+                  putStrLn (" "++st)
+                  putStrLn "-------"
+          else
+          case st of
+          "f1"   -> do varSet (getMenu am) (fst (hijos!!0), False)
+                       varSet (getMemoria am) (memor ++ [ fst menup ])
+          "f2"   -> do varSet (getMenu am) (fst (hijos!!1), False)
+                       varSet (getMemoria am) (memor ++ [ fst menup ])
+          "f3"   -> do varSet (getMenu am) (fst (hijos!!2), False)
+                       varSet (getMemoria am) (memor ++ [ fst menup ])
+          "f4"   -> do varSet (getMenu am) (fst (hijos!!3), False)
+                       varSet (getMemoria am) (memor ++ [ fst menup ])
+          "f5"   -> do varSet (getMenu am) (fst (hijos!!4), False)
+                       varSet (getMemoria am) (memor ++ [ fst menup ])
+          "f9"   -> do varSet (getMenu am) (fst (hijos!!8), False)
+                       varSet (getMemoria am) (memor ++ [ fst menup ])
+          "exit" -> if length memor == 1 
+                    then do varSet (getMenu am) (Raiz, True)
+                            varSet (getMemoria am) memor
+                    else do varSet (getMenu am) ( last memor, True)
+                            varSet (getMemoria am) (init memor)
+          _      -> varSet (getMenu am) ( last memor, True)
+

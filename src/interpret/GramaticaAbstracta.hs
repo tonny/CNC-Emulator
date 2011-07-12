@@ -22,7 +22,7 @@ data Cnc = Cordenadas  N ControlCordenadas -- EndBlock
          | Funciones   N Funciones         -- EndBlock
    deriving Show
 
-data ControlCordenadas = Formato Formatos NSecuencia
+data ControlCordenadas = Formato                Formatos       NSecuencia
                        | TipoCordenadas         TipoCordenada  [BodyTipoCordenada]
                        | OrigenTemporal         OrigenTemporalG92
                        | AvanceEjeRotacional    AvanceEjeRota
@@ -56,7 +56,7 @@ data BodyTipoCordenada = Angulos        Angulo
 data AvanceEjeRota = AvanceEjeRotacionalG94 [BodyAvanceEje]
            deriving Show
 
-data BodyAvanceEje = AvanceEjeNs Nume 
+data BodyAvanceEje = AvanceEjeNs N
                    | AvanceEjeC  Nume
                    | AvanceEjeF  F
             deriving Show
@@ -229,7 +229,9 @@ data BodyCiclos = CicloD    D
 --                         5. Auto Rutinas
 -- ===============================================================================
 
-data AutoRutina = Rutina Helice [BodyRutina]
+--data AutoRutina = Rutina Helice [BodyRutina]
+data AutoRutina =  RutinaA [BodyRutina]
+                | RutinaB [BodyRutina]
            deriving Show
 
 data Helice = HeliceHorario  
@@ -417,16 +419,16 @@ data Cord = ControlEjeArbol    ControlArbol
 --        | CambioGrupo        CambioGrupo
    deriving Show
 
-data ControlArbol = RotacionDer String
-                  | RotacionIzq String
-                  | ParadaArbol String
+data ControlArbol = RotacionDer --String
+                  | RotacionIzq --String
+                  | ParadaArbol --String
           deriving Show
 
-data ControlPrograma = ParadaPrograma String
-                     | ParadaOpcional String
-                     | FinPrograma    String
-                     | FinProgramaReb String
-                     | CambioHerram   String
+data ControlPrograma = ParadaPrograma --String
+                     | ParadaOpcional --String
+                     | FinPrograma    --String
+                     | FinProgramaReb --String
+                     | CambioHerram   --String
             deriving Show
 
 

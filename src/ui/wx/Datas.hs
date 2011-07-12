@@ -6,16 +6,17 @@ module Datas where
 
 import Graphics.UI.WX
 
-type Posicion = Int
+type Posicion   = Int
 type MemoriaInf = MenuInferior
 type MemoriaPos = Int
-
-type Ambiente = ( Var (Paneles,Bool) --menu que esta pintado en el panel video
-                , Var [Paneles] --memoria que guarda los paneles aneteriores
-                , Var (MenuInferior,Posicion,MemoriaInf,MemoriaPos)
-                , Var Bool -- parada de emergencia
-                , Var Bool  -- servos Activo
-                )
+type Ambiente   = ( Var (Paneles,Bool) --menu que esta pintado en el panel video
+                  , Var [Paneles] --memoria que guarda los paneles aneteriores
+                  , Var (MenuInferior,Posicion,MemoriaInf,MemoriaPos)
+                  , Var Bool -- parada de emergencia
+                  , Var Bool  -- servos Activo
+                  , Var (Int,String) -- guarda el numero de programa y el nombre
+                  , Var [String] -- gurada todos los nombres de los programas
+                  )
 
 data MenuInferior =  OnMando
                   | SeguridadPuerta
@@ -77,19 +78,25 @@ data Paneles =
    deriving (Show,Eq)
 
 getMenu :: Ambiente -> Var (Paneles,Bool)
-getMenu (a,_,_,_,_) = a
+getMenu (a,_,_,_,_,_,_) = a
 
 getMemoria :: Ambiente -> Var [Paneles]
-getMemoria (_,a,_,_,_) = a
+getMemoria (_,a,_,_,_,_,_) = a
 
 getMenuInf :: Ambiente -> Var (MenuInferior,Posicion,MemoriaInf,MemoriaPos)
-getMenuInf (_,_,a,_,_) = a
+getMenuInf (_,_,a,_,_,_,_) = a
 
 getParadaEmer :: Ambiente -> Var Bool
-getParadaEmer (_,_,_,a,_) = a
+getParadaEmer (_,_,_,a,_,_,_) = a
 
 getServos :: Ambiente -> Var Bool
-getServos (_,_,_,_,a) = a
+getServos (_,_,_,_,a,_,_) = a
+
+getPrograma :: Ambiente -> Var (Int,String)
+getPrograma (_,_,_,_,_,a,_) = a
+
+getMemProg :: Ambiente -> Var [String]
+getMemProg (_,_,_,_,_,_,a) = a
 
 primero :: (MenuInferior,Posicion,MemoriaInf,MemoriaPos) -> MenuInferior 
 primero (a,_,_,_) = a

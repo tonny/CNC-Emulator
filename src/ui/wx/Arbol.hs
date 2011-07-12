@@ -10,6 +10,9 @@ import Graphics.UI.WX
 
 data Arbol a = Bt a [Arbol a]
        deriving Show
+
+--data Rose a = Node a [Rose a] | Nil
+
 ramas :: Arbol (Paneles,String) -> [Arbol (Paneles,String)]
 ramas (Bt _ res ) = res
 
@@ -26,7 +29,11 @@ getHijos (Bt x h@(y:ys))  []     a | a == fst x = ventanas h
                                    | otherwise  = getHijos y ys a
 getHijos (Bt _ [])        (x:xs) a = getHijos x xs a
 getHijos (Bt b h@(x:res)) (y:ys) a | a == fst b = ventanas h
-                                   | otherwise  = (getHijos x res a)++(getHijos y ys a) 
+                                   | otherwise  = (getHijos x res a)++(getHijos y ys a)
+
+--getPadre :: Arbol (Paneles, String) -> [Arbol (Paneles, String)] -> Paneles -> [(Paneles,String)]
+--getPadre (Bt _ []) [] a = []
+--getPadre (Bt x)
 
 -- Funcion que crear botones, renderizando algunas caracteristicas basicas que
 -- debe tener un bonton por defecto.
@@ -122,7 +129,7 @@ cargarSalvar p =
   Bt (CargarSalvar      , "CARGAR /\nSALVAR")
       [ Bt (Salvar      , "SALVAR")    []
       , Bt (Verificar   , "VERIFICAR") []
-      , Bt (Cargar      , "CARGAR" )   []
+      , Bt (Cargar      , "CARGAR" )   [] --aqui existe mas menus
       , Bt (VacioC1     , "   ")       []
       , Bt (VacioC2     , "   ")       []
       , Bt (VacioC3     , "   ")       []

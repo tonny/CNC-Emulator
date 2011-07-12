@@ -55,7 +55,7 @@ pBodyTipoCordenada =  Angulos        <$> pAngulo
 -- OJO puede haver mas de C, N F
 pAvanceEjeRota = AvanceEjeRotacionalG94 <$ pKeyword "G94" <*> pList pBodyAvanceEje
 
-pBodyAvanceEje =  AvanceEjeNs <$  pKeyword "N" <*> pNumero -- pNSecuencia OJO-->> Corregir 
+pBodyAvanceEje =  AvanceEjeNs <$> pN -- pNSecuencia OJO-->> Corregir 
               <|> AvanceEjeC  <$  pKeyword "C" <*> pNumero
               <|> AvanceEjeF  <$> pF
 
@@ -209,16 +209,23 @@ pBodyCiclos =  CicloD    <$> pD
 -- ===============================================================================
 --                         5. Auto Rutinas
 -- ===============================================================================
-
+{-
 pAutoRutina = Rutina <$> pHelice <*> pList pBodyRutina
 
 pHelice =  HeliceHorario  <$ pKeyword "G22"
        <|> HeliceAntiHora <$ pKeyword "G23"
+-}
+
+pAutoRutina =  RutinaA <$ pKeyword "G22" <*> pList pBodyRutina
+           <|> RutinaB <$ pKeyword "G23" <*> pList pBodyRutina
+
+pHelice =  HeliceHorario  <$ pKeyword "G22"
+       <|> HeliceAntiHora <$ pKeyword "G23"
+
 
 pBodyRutina =  RutinaPosCentro <$> pPosicionCentro
            <|> RutinaN         <$> pN
            <|> RutinaEjeLineal <$> pEjesLineales
-
 -- ===============================================================================
 --                        6. Funciones
 -- ===============================================================================
@@ -366,21 +373,21 @@ pD = D <$ pKeyword "D" <*> pNumero
 --                            Funcion M - Miselaneas 
 -- ===============================================================================
 
-pM = M <$ pKeyword "M" <*> pCord
+pM = M <$> pCord
  --Controlar en las Condiciones de contexto
 pCord =  ControlEjeArbol    <$> pControlArbol 
      <|> ControlDelPrograma <$> pControlPrograma
 --     <|> CambioGrupo        <$> CambioGrupo
 
-pControlArbol =  RotacionDer <$> pKeyword "03"
-             <|> RotacionIzq <$> pKeyword "04"
-             <|> ParadaArbol <$> pKeyword "05"
+pControlArbol =  RotacionDer <$ pKeyword "M03"
+             <|> RotacionIzq <$ pKeyword "M04"
+             <|> ParadaArbol <$ pKeyword "M05"
 
-pControlPrograma =  ParadaPrograma <$> pKeyword "00"
-                <|> ParadaOpcional <$> pKeyword "01"
-                <|> FinPrograma    <$> pKeyword "02"
-                <|> FinProgramaReb <$> pKeyword "30"
-                <|> CambioHerram   <$> pKeyword "06"
+pControlPrograma =  ParadaPrograma <$ pKeyword "M00"
+                <|> ParadaOpcional <$ pKeyword "M01"
+                <|> FinPrograma    <$ pKeyword "M02"
+                <|> FinProgramaReb <$ pKeyword "M30"
+                <|> CambioHerram   <$ pKeyword "M06"
 
 -- ===============================================================================
 --                     Ramificaciones en programa 
@@ -437,6 +444,7 @@ pR = R <$ pKeyword "R" <*> pNumero
 instance (Eq Tipo) => (Eq Simbolo) where
    (Simbolo Error _ _ _ ) == (Simbolo Error _ _ _ ) = True
    (Simbolo Numero _ _ _) == (Simbolo Numero _ _ _) = True
+   (Simbolo Keyword a _ _) == (Simbolo Keyword a1 _ _) =  a == a1
    (Simbolo t1    s _ _ ) == (Simbolo t2   s1 _ _ ) = t1 == t2 && s == s1
 
 instance Ord Simbolo where
